@@ -1,6 +1,6 @@
 job "psc-api-maj-v2" {
   datacenters = [
-    "dc1"]
+    "${datacenter}"]
   type = service
   vault {
     policies = [
