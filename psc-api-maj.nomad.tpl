@@ -69,7 +69,7 @@ job "psc-api-maj-v2" {
         destination = "local/file.env"
         env = true
         data = <<EOH
-JAVA_TOOL_OPTIONS="-Xms2g -Xmx2g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties -Dhttps.proxyHost=${proxy_host} -Dhttps.proxyPort=${proxy_port} -Dhttps.nonProxyHosts=${non_proxy_hosts}"
+JAVA_TOOL_OPTIONS="-Xms256m -Xmx1g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
 EOH
       }
 
@@ -90,8 +90,8 @@ EOF
       }
 
       resources {
-        cpu = 2176
-        memory = 512
+        cpu = 500
+        memory = 1280
       }
 
 
