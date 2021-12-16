@@ -36,11 +36,12 @@ job "psc-api-maj-v2" {
       max = 5
 
       policy {
+        cooldown = "180s"
         check "few_requests" {
           source = "prometheus"
           query = "min(max(http_server_requests_seconds_max{_app='psc-api-maj-v2'}!= 0)by(instance))"
           strategy "threshold" {
-            upper_bound = 50
+            upper_bound = 2
             delta = -1
           }
         }
@@ -49,7 +50,7 @@ job "psc-api-maj-v2" {
           source = "prometheus"
           query = "min(max(http_server_requests_seconds_max{_app='psc-api-maj-v2'}!= 0)by(instance))"
           strategy "threshold" {
-            lower_bound = 20
+            lower_bound = 0.5
             delta = 1
           }
         }
