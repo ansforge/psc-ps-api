@@ -16,7 +16,7 @@ tags:
   - name: toggle
     description: toggle
 paths:
-  /v1/ps:
+  /v2/ps:
     post:
       summary: Create new Ps
       tags:
@@ -134,7 +134,7 @@ paths:
         required: true
       tags:
         - ps
-  '/v1/ps/{psId}':
+  '/v2/ps/{psId}':
     parameters:
       - schema:
           type: string
@@ -214,7 +214,7 @@ paths:
         '404':
           description: Not Found
       description: Delete a PS by its id
-  '/v1/ps/force/{psId}':
+  '/v2/ps/force/{psId}':
     parameters:
       - schema:
           type: string
@@ -238,7 +238,7 @@ paths:
         '404':
           description: Not Found
       description: completely delete Ps (not only deactivate it)
-  /v1/structure:
+  /v2/structure:
     post:
       summary: Create new structure
       tags:
@@ -345,7 +345,7 @@ paths:
                   oldStructureId: '101'
                   registrationAuthority: ARS/ARS/ARS
         required: true
-  '/v1/structure/{structureId}':
+  '/v2/structure/{structureId}':
     parameters:
       - schema:
           type: string
@@ -418,7 +418,7 @@ paths:
         '404':
           description: Not Found
       description: Delete structure by structureId
-  /v1/toggle:
+  /v2/toggle:
     put:
       summary: toggle PsRef mapping
       operationId: toggle-psref

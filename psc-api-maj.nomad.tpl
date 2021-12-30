@@ -57,7 +57,7 @@ job "psc-api-maj-v2" {
       }
     }
 
-    task "pscload" {
+    task "psc-api-maj-v2" {
       driver = "docker"
       config {
         image = "${artifact.image}:${artifact.tag}"
