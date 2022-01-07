@@ -53,7 +53,7 @@ public class StructureOperationTest extends BaseOperationTest {
         Structure structure = structureRepository.findByStructureTechnicalId("1");
         String structureAsJsonString = objectWriter.writeValueAsString(structure);
 
-        ResultActions getStructure = mockMvc.perform(get("/api/v1/structure/1").header("Accept", "application/json"))
+        ResultActions getStructure = mockMvc.perform(get("/api/v2/structure/1").header("Accept", "application/json"))
                 .andExpect(status().is(200)).andExpect(content().json(structureAsJsonString));
 
         assertThat(memoryAppender.contains("Structure 1 has been found", Level.INFO)).isTrue();
@@ -64,7 +64,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not get a structure if it doesn't exist")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void getStructureByIdFailed() throws Exception {
-        mockMvc.perform(get("/api/v1/structure/3").header("Accept", "application/json"))
+        mockMvc.perform(get("/api/v2/structure/3").header("Accept", "application/json"))
                 .andExpect(status().is(404));
 
         assertThat(memoryAppender.contains("Structure 3 not found", Level.WARN)).isTrue();
@@ -74,7 +74,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should get Structure if missing header")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void getStructureWithoutJsonAcceptHeader() throws Exception {
-        mockMvc.perform(get("/api/v1/structure/2"))
+        mockMvc.perform(get("/api/v2/structure/2"))
                 .andExpect(status().is(200));
     }
 
@@ -82,14 +82,14 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not get Structure if wrong accept header")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void getStructureWithWrongHeaderFailed() throws Exception {
-        mockMvc.perform(get("/api/v1/structure/2").header("Accept","application/xml"))
+        mockMvc.perform(get("/api/v2/structure/2").header("Accept","application/xml"))
                 .andExpect(status().is(406));
     }
 
     @Test
     @DisplayName(value = "should create a new structure")
     public void createNewStructure() throws Exception {
-        ResultActions createdStructure = mockMvc.perform(post("/api/v1/structure").header("Accept", "application/json")
+        ResultActions createdStructure = mockMvc.perform(post("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"_id\":\"61b0debad9b1af764debd6fa\",\"siteSIRET\":\"125 137 196 15574\"," +
                         "\"siteSIREN\":\"125 137 196\",\"siteFINESS\":null,\"legalEstablishmentFINESS\":null,\"structureTechnicalId\":\"1\","+
                         "\"legalCommercialName\":\"Structure One\",\"publicCommercialName\":\"Structure One\",\"recipientAdditionalInfo\":\"info +\","+
@@ -110,7 +110,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not create a structure if exists already")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void createExistingStructureFailed() throws Exception {
-        mockMvc.perform(post("/api/v1/structure").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"siteSIRET\":\"125 137 196 15574\",\"siteSIREN\":\"125 137 196\",\"siteFINESS\":null,"+
                         "\"legalEstablishmentFINESS\":null,\"structureTechnicalId\":\"1\",\"legalCommercialName\":\"Structure One\","+
                         "\"publicCommercialName\":\"Structure One\",\"recipientAdditionalInfo\":\"info +\",\"geoLocationAdditionalInfo\":\"geoloc info +\"," +
@@ -128,11 +128,11 @@ public class StructureOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "should not create a structure if malformed request body")
     public void createMalformedStructureFailed() throws Exception {
-        mockMvc.perform(post("/api/v1/structure").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"structureTechnicalId\":\"\",\"legalCommercialName\":\"Structure One\"}"))
                 .andExpect(status().is(400));
 
-        mockMvc.perform(post("/api/v1/structure").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"legalCommercialName\":\"Structure One\"}"))
                 .andExpect(status().is(400));
     }
@@ -144,7 +144,7 @@ public class StructureOperationTest extends BaseOperationTest {
         Structure structure = structureRepository.findByStructureTechnicalId("1");
         assertEquals(structure.getLegalCommercialName(), "Structure One");
 
-        ResultActions updatedStructure = mockMvc.perform(put("/api/v1/structure").header("Accept", "application/json")
+        ResultActions updatedStructure = mockMvc.perform(put("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"structureTechnicalId\":\"1\",\"legalCommercialName\":\"Structure updated\"}"))
                 .andExpect(status().is(200));
 
@@ -159,7 +159,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not update a structure if not exists")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void updateAbsentStructureFailed() throws Exception {
-        mockMvc.perform(put("/api/v1/structure").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"structureTechnicalId\":\"1000\",\"legalCommercialName\":\"Structure One\"}"))
                 .andExpect(status().is(404));
 
@@ -171,7 +171,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should delete a structure")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void deleteStructureById() throws Exception {
-        ResultActions deletedStructure = mockMvc.perform(delete("/api/v1/structure/1").header("Accept", "application/json"))
+        ResultActions deletedStructure = mockMvc.perform(delete("/api/v2/structure/1").header("Accept", "application/json"))
                 .andExpect(status().is(204));
 
         assertThat(memoryAppender.contains("Structure 1 successfully removed", Level.INFO)).isTrue();
@@ -184,7 +184,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not delete a structure if not exists")
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void deleteAbsentStructureFailed() throws Exception {
-        mockMvc.perform(delete("/api/v1/structure/3").header("Accept", "application/json"))
+        mockMvc.perform(delete("/api/v2/structure/3").header("Accept", "application/json"))
                 .andExpect(status().is(404));
 
         assertThat(memoryAppender.contains("Structure 3 successfully removed", Level.INFO)).isFalse();

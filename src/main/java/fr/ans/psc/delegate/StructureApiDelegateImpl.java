@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 @Service
 @Slf4j
 public class StructureApiDelegateImpl implements StructureApiDelegate {
@@ -22,8 +25,9 @@ public class StructureApiDelegateImpl implements StructureApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Structure> getStructureById(String structureId) {
+    public ResponseEntity<Structure> getStructureById(String encodedStructureId) {
 
+        String structureId = URLDecoder.decode(encodedStructureId, StandardCharsets.UTF_8);
         Structure structure = structureRepository.findByStructureTechnicalId(structureId);
         if (structure == null) {
             log.warn("Structure {} not found", structureId);
@@ -49,7 +53,8 @@ public class StructureApiDelegateImpl implements StructureApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Void> deleteStructureByStructureId(String structureId) {
+    public ResponseEntity<Void> deleteStructureByStructureId(String encodedStructureId) {
+        String structureId = URLDecoder.decode(encodedStructureId, StandardCharsets.UTF_8);
         Structure storedStructure = structureRepository.findByStructureTechnicalId(structureId);
 
         if (storedStructure == null) {

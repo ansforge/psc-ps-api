@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,7 +63,7 @@ public class PsOperationTest extends BaseOperationTest {
         Ps storedPs = psRepository.findByNationalId("800000000001");
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
 
-        ResultActions firstPsRefRequest = mockMvc.perform(get("/api/v1/ps/800000000001")
+        ResultActions firstPsRefRequest = mockMvc.perform(get("/api/v2/ps/800000000001")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(200));
 
@@ -71,7 +72,7 @@ public class PsOperationTest extends BaseOperationTest {
 
         firstPsRefRequest.andDo(document("PsOperationTest/get_Ps_by_id"));
 
-        ResultActions secondPsRefRequest = mockMvc.perform(get("/api/v1/ps/800000000011")
+        ResultActions secondPsRefRequest = mockMvc.perform(get("/api/v2/ps/800000000011")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(200));
 
@@ -81,10 +82,24 @@ public class PsOperationTest extends BaseOperationTest {
     }
 
     @Test
+    @DisplayName("check encoded url")
+    @MongoDataSet(value = "/dataset/psEncodedId.json", cleanBefore = true, cleanAfter = true)
+    public void getPsByEncodedId() throws Exception {
+        Ps storedPs = psRepository.findByNationalId("80000000000/1");
+        String psAsJsonString = objectWriter.writeValueAsString(storedPs);
+        ResultActions psRefRequest = mockMvc.perform(get("/api/v2/ps/80000000000%2F1")
+                .header("Accept", "application/json"))
+                .andExpect(status().is(200))
+                .andDo(print());
+
+        psRefRequest.andExpect(content().json(psAsJsonString));
+    }
+
+    @Test
     @DisplayName(value = "should get Ps if missing header")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void getPsWithoutJsonAcceptHeader() throws Exception {
-        mockMvc.perform(get("/api/v1/ps/800000000001"))
+        mockMvc.perform(get("/api/v2/ps/800000000001"))
                 .andExpect(status().is(200));
     }
 
@@ -92,7 +107,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not get Ps if wrong accept header")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void getPsWithWrongHeaderFailed() throws Exception {
-        mockMvc.perform(get("/api/v1/ps/800000000001").header("Accept","application/xml"))
+        mockMvc.perform(get("/api/v2/ps/800000000001").header("Accept","application/xml"))
                 .andExpect(status().is(406));
     }
 
@@ -100,7 +115,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not get Ps if deactivated")
     @MongoDataSet(value = "/dataset/deactivated_ps.json", cleanBefore = true, cleanAfter = true)
     public void getPsDeactivated() throws Exception {
-        mockMvc.perform(get("/api/v1/ps/800000000002")
+        mockMvc.perform(get("/api/v2/ps/800000000002")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(404));
         assertThat(memoryAppender.contains("Ps 800000000002 is deactivated", Level.WARN)).isTrue();
@@ -110,7 +125,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not get Ps if not exist")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void getNotExistingPs() throws Exception {
-        mockMvc.perform(get("/api/v1/ps/800000000003")
+        mockMvc.perform(get("/api/v2/ps/800000000003")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(404));
         assertThat(memoryAppender.contains("No Ps found with nationalIdRef 800000000003", Level.WARN)).isTrue();
@@ -119,7 +134,7 @@ public class PsOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "should create a brand new Ps")
     public void createNewPs() throws Exception {
-        ResultActions createdPs = mockMvc.perform(post("/api/v1/ps").header("Accept", "application/json")
+        ResultActions createdPs = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000001\"," +
                         "\"nationalId\":\"800000000001\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY''\",\"dateOfBirth\":\"17/12/1983\"," +
                         "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
@@ -138,7 +153,7 @@ public class PsOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "should reject post request if wrong content-type")
     public void createPsWrongContentTypeFailed() throws Exception {
-        mockMvc.perform(post("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/xml").content("{\"idType\":\"8\",\"id\":\"00000000001\"," +
                         "\"nationalId\":\"800000000001\"}"))
                 .andExpect(status().is(415));
@@ -149,7 +164,7 @@ public class PsOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "should reject post request if content-type absent")
     public void createPsAbsentContentTypeFailed() throws Exception {
-        mockMvc.perform(post("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .content("{\"idType\":\"8\",\"id\":\"00000000001\"," +
                         "\"nationalId\":\"800000000001\"}"))
                 .andExpect(status().is(415));
@@ -161,7 +176,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not create a Ps if already exists and still activated")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void createStillActivatedPsFailed() throws Exception {
-        mockMvc.perform(post("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000001\",\n" +
@@ -176,7 +191,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should reactivate Ps if already exists")
     @MongoDataSet(value = "/dataset/deactivated_ps.json", cleanBefore = true, cleanAfter = true)
     public void reactivateExistingPs() throws Exception {
-        mockMvc.perform(post("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000002\",\n" +
@@ -190,7 +205,7 @@ public class PsOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "should not create Ps if malformed request body")
     public void createMalformedPsFailed() throws Exception {
-        mockMvc.perform(post("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\"toto\":\"titi\"}"))
                 .andExpect(status().is(400));
     }
@@ -200,7 +215,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should delete Ps by Id")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void deletePsById() throws Exception {
-        ResultActions deletedPs = mockMvc.perform(delete("/api/v1/ps/800000000001"))
+        ResultActions deletedPs = mockMvc.perform(delete("/api/v2/ps/800000000001"))
                 .andExpect(status().is(204));
 
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000001, will not be deleted", Level.WARN)).isFalse();
@@ -221,7 +236,7 @@ public class PsOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     @ExpectedMongoDataSet(value = "/dataset/ps_2_psref_entries.json")
     public void deletePsFailed() throws Exception {
-        mockMvc.perform(delete("/api/v1/ps/800000000003")
+        mockMvc.perform(delete("/api/v2/ps/800000000003")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(404));
 
@@ -233,7 +248,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should update Ps")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void updatePs() throws Exception {
-        ResultActions updatedPs = mockMvc.perform(put("/api/v1/ps").header("Accept", "application/json")
+        ResultActions updatedPs = mockMvc.perform(put("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000001\",\n" +
@@ -250,7 +265,7 @@ public class PsOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "should not update Ps if not exists")
     public void updateAbsentPsFailed() throws Exception {
-        mockMvc.perform(put("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000001\",\n" +
@@ -266,7 +281,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not update Ps if deactivated")
     @MongoDataSet(value = "/dataset/deactivated_ps.json", cleanBefore = true, cleanAfter = true)
     public void updateDeactivatedPsFailed() throws Exception {
-        mockMvc.perform(put("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000002\",\n" +
@@ -283,7 +298,7 @@ public class PsOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void updateMalformedPsFailed() throws Exception {
         // Id not present
-        mockMvc.perform(put("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000001\",\n" +
@@ -291,7 +306,7 @@ public class PsOperationTest extends BaseOperationTest {
                 .andExpect(status().is(400));
 
         // Id is blank
-        mockMvc.perform(put("/api/v1/ps").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
                         "\"id\": \"00000000001\",\n" +
@@ -305,7 +320,7 @@ public class PsOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/3_ps_before_delete.json", cleanBefore = true, cleanAfter = true)
     @ExpectedMongoDataSet(value = "/dataset/1_ps_after_delete.json")
     public void physicalDeleteById() throws Exception {
-        mockMvc.perform(delete("/api/v1/ps/force/800000000001")
+        mockMvc.perform(delete("/api/v2/ps/force/800000000001")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(204));
 
@@ -319,7 +334,7 @@ public class PsOperationTest extends BaseOperationTest {
         assertEquals(psRepository.count(), 2);
 
         // physical delete of deactivated Ps
-        mockMvc.perform(delete("/api/v1/ps/force/800000000002")
+        mockMvc.perform(delete("/api/v2/ps/force/800000000002")
                 .header("Accept", "application/json"))
                 .andExpect(status().is(204));
 

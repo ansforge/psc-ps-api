@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -29,8 +31,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Ps> getPsById(String psId) {
-
+    public ResponseEntity<Ps> getPsById(String encodedPsId) {
+        String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         PsRef psRef = psRefRepository.findPsRefByNationalIdRef(psId);
 
         // check if PsRef exists and is activated
@@ -116,7 +118,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Void> deletePsById(String psId) {
+    public ResponseEntity<Void> deletePsById(String encodedPsId) {
+        String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         PsRef storedPsRef = psRefRepository.findPsRefByNationalIdRef(psId);
         if (storedPsRef == null) {
             log.warn("No Ps found with nationalId {}, will not be deleted", psId);
@@ -139,7 +142,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Void> forceDeletePsById(String psId) {
+    public ResponseEntity<Void> forceDeletePsById(String encodedPsId) {
+        String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         Ps ps = psRepository.findByNationalId(psId);
 
         if (ps == null) {

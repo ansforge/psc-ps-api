@@ -4,6 +4,6 @@ This chapter focuses on toggle operation on Professionnel de Santé
 
 === Toggle a PsRef to another Ps
 
-A `PUT` to `/v1/toggle` to toggle an existing Ps to another one
+A `PUT` to `/v2/toggle` to toggle an existing Ps to another one
 
 operation::ToggleOperationTest/toggle_psref[snippets='http-request,http-response']

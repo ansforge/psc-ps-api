@@ -4,24 +4,24 @@ This chapter focuses on CRUD operations on Professionnel de Santé
 
 === Get a Ps by id
 
-A `GET` to `/v1/ps/{psId}` to find a Ps by its nationalId
+A `GET` to `/v2/ps/{psId}` to find a Ps by its nationalId
 
 operation::PsOperationTest/get_Ps_by_id[snippets='http-request,http-response']
 
 === Create a new Ps
 
-A `POST` to `/v1/ps` to create a Ps
+A `POST` to `/v2/ps` to create a Ps
 
 operation::PsOperationTest/create_new_Ps[snippets='http-request,http-response']
 
 === Update a Ps
 
-A `PUT` to `/v1/ps` to update an existing Ps
+A `PUT` to `/v2/ps` to update an existing Ps
 
 operation::PsOperationTest/update_Ps[snippets='http-request,http-response']
 
 === Delete a Ps by id
 
-A `DELETE` to `/v1/ps/{psId}` to delete a Ps by its nationalId
+A `DELETE` to `/v2/ps/{psId}` to delete a Ps by its nationalId
 
 operation::PsOperationTest/delete_Ps_by_id[snippets='http-request,http-response']

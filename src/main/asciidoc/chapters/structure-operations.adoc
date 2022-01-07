@@ -4,24 +4,24 @@ This chapter focuses on CRUD operations on Structure de Santé
 
 === Get a Structure by id
 
-A `GET` to `/v1/structure/{structureId}` to find a Ps by its structureTechnicalId
+A `GET` to `/v2/structure/{structureId}` to find a Ps by its structureTechnicalId
 
 operation::StructureOperationTest/get_structure_by_id[snippets='http-request,http-response']
 
 === Create a new Structure
 
-A `POST` to `/v1/structure` to create a Structure
+A `POST` to `/v2/structure` to create a Structure
 
 operation::StructureOperationTest/create_new_structure[snippets='http-request,http-response']
 
 === Update a Structure
 
-A `PUT` to `/v1/structure` to update an existing Structure
+A `PUT` to `/v2/structure` to update an existing Structure
 
 operation::StructureOperationTest/update_structure[snippets='http-request,http-response']
 
 === Delete a Structure by id
 
-A `DELETE` to `/v1/structure/{structureId}` to delete a Structure by its structureTechnicalId
+A `DELETE` to `/v2/structure/{structureId}` to delete a Structure by its structureTechnicalId
 
 operation::StructureOperationTest/delete_structure_by_id[snippets='http-request,http-response']

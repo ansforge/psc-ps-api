@@ -111,7 +111,7 @@ EOF
         name = "metrics-exporter"
         port = "http"
         tags = [
-          "_endpoint=/psc-api-maj/v1/actuator/prometheus",
+          "_endpoint=/psc-api-maj/v2/actuator/prometheus",
           "_app=psc-api-maj-v2",]
       }
     }

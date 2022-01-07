@@ -1,0 +1,57 @@
+{
+  "fr.ans.psc.model.Ps": [
+    {
+      "idType": "8",
+      "id": "0000000000/1",
+      "nationalId": "80000000000/1",
+      "lastName": "DUPONT",
+      "firstName": "JIMMY''",
+      "dateOfBirth": "17/12/1983",
+      "birthAddressCode": "57463",
+      "birthCountryCode": "99000",
+      "birthAddress": "METZ",
+      "genderCode": "M",
+      "phone": "0601020304",
+      "email": "jimmy@dupont.fr",
+      "salutationCode": "M",
+      "professions": [
+        {
+          "exProId": "50C",
+          "code": "50",
+          "categoryCode": "C",
+          "salutationCode": "M",
+          "lastName": "DUPONT",
+          "firstName": "JIMMY",
+          "expertises": [
+            {
+              "expertiseId": "SSM69",
+              "typeCode": "S",
+              "code": "SM69"
+            }
+          ],
+          "workSituations": [
+            {
+              "situId": "SSA04",
+              "modeCode": "S",
+              "activitySectorCode": "SA04",
+              "pharmacistTableSectionCode": "AC36",
+              "roleCode": "12",
+              "structures": [
+                {
+                  "structureId": "1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fr.ans.psc.model.PsRef": [
+    {
+      "nationalIdRef": "80000000000/1",
+      "nationalId": "80000000000/1",
+      "activated": 1638791221
+    }
+  ]
+}
