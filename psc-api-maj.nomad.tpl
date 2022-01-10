@@ -97,6 +97,7 @@ EOF
 
       service {
         name = "$\u007BNOMAD_JOB_NAME\u007D"
+        tags = ["urlprefix-/psc-api-maj"]
         port = "http"
         check {
           type = "tcp"
