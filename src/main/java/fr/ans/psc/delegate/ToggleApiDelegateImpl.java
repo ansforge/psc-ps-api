@@ -40,7 +40,7 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
         Ps targetPs = psRepository.findByNationalId(psRef.getNationalId());
         if (targetPs == null) {
             log.error("Could not toggle PsRef {} on Ps {} because this Ps does not exist", psRef.getNationalIdRef(), psRef.getNationalId());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.GONE);
         }
 
         // STEP 3: PHYSICALLY DELETE OLD PS

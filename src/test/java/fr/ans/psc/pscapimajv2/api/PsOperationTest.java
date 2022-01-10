@@ -117,7 +117,7 @@ public class PsOperationTest extends BaseOperationTest {
     public void getPsDeactivated() throws Exception {
         mockMvc.perform(get("/api/v2/ps/800000000002")
                 .header("Accept", "application/json"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
         assertThat(memoryAppender.contains("Ps 800000000002 is deactivated", Level.WARN)).isTrue();
     }
 
@@ -127,7 +127,7 @@ public class PsOperationTest extends BaseOperationTest {
     public void getNotExistingPs() throws Exception {
         mockMvc.perform(get("/api/v2/ps/800000000003")
                 .header("Accept", "application/json"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
         assertThat(memoryAppender.contains("No Ps found with nationalIdRef 800000000003", Level.WARN)).isTrue();
     }
 
@@ -238,7 +238,7 @@ public class PsOperationTest extends BaseOperationTest {
     public void deletePsFailed() throws Exception {
         mockMvc.perform(delete("/api/v2/ps/800000000003")
                 .header("Accept", "application/json"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000003, will not be deleted", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000003 successfully deleted", Level.INFO)).isFalse();
@@ -271,7 +271,7 @@ public class PsOperationTest extends BaseOperationTest {
                         "\"id\": \"00000000001\",\n" +
                         "\"nationalId\": \"800000000001\"\n" +
                         "}"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000001, can not update it", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000001 successfully updated", Level.INFO)).isFalse();
@@ -287,7 +287,7 @@ public class PsOperationTest extends BaseOperationTest {
                         "\"id\": \"00000000002\",\n" +
                         "\"nationalId\": \"800000000002\"\n" +
                         "}"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000002, can not update it", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000002 successfully updated", Level.INFO)).isFalse();

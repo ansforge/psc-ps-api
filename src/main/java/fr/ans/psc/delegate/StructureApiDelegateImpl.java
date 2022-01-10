@@ -31,7 +31,7 @@ public class StructureApiDelegateImpl implements StructureApiDelegate {
         Structure structure = structureRepository.findByStructureTechnicalId(structureId);
         if (structure == null) {
             log.warn("Structure {} not found", structureId);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.GONE);
         } else {
             log.info("Structure {} has been found", structureId);
             return new ResponseEntity<>(structure, HttpStatus.OK);
@@ -59,7 +59,7 @@ public class StructureApiDelegateImpl implements StructureApiDelegate {
 
         if (storedStructure == null) {
             log.warn("Structure {} not found", structureId);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.GONE);
         }
 
         mongoTemplate.remove(storedStructure);
@@ -73,7 +73,7 @@ public class StructureApiDelegateImpl implements StructureApiDelegate {
 
         if (storedStructure == null) {
             log.warn("Structure {} not found", structure.getStructureTechnicalId());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.GONE);
         }
 
         structure.set_id(storedStructure.get_id());

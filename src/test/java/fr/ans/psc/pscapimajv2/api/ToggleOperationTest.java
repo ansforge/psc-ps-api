@@ -85,7 +85,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     public void absentTargetPsToggleFailed() throws Exception {
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"89\"}"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isFalse();
         assertThat(memoryAppender.contains("PsRef 01 is now referencing Ps 81", Level.INFO)).isFalse();

@@ -65,7 +65,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void getStructureByIdFailed() throws Exception {
         mockMvc.perform(get("/api/v2/structure/3").header("Accept", "application/json"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("Structure 3 not found", Level.WARN)).isTrue();
     }
@@ -161,7 +161,7 @@ public class StructureOperationTest extends BaseOperationTest {
     public void updateAbsentStructureFailed() throws Exception {
         mockMvc.perform(put("/api/v2/structure").header("Accept", "application/json")
                 .contentType("application/json").content("{\"structureTechnicalId\":\"1000\",\"legalCommercialName\":\"Structure One\"}"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("Structure 1000 successfully updated", Level.INFO)).isFalse();
         assertThat(memoryAppender.contains("Structure 1000 not found", Level.WARN)).isTrue();
@@ -185,7 +185,7 @@ public class StructureOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/structure.json", cleanBefore = true, cleanAfter = true)
     public void deleteAbsentStructureFailed() throws Exception {
         mockMvc.perform(delete("/api/v2/structure/3").header("Accept", "application/json"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("Structure 3 successfully removed", Level.INFO)).isFalse();
         assertThat(memoryAppender.contains("Structure 3 not found", Level.WARN)).isTrue();

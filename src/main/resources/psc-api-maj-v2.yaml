@@ -88,7 +88,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       description: Update Ps
       requestBody:
@@ -194,7 +194,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       description: get a Ps by one of its idNationalRef
     delete:
@@ -211,7 +211,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       description: Delete a PS by its id
   '/v2/ps/force/{psId}':
@@ -235,7 +235,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       description: completely delete Ps (not only deactivate it)
   /v2/structure:
@@ -308,7 +308,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       description: Update structure
       requestBody:
@@ -397,7 +397,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       operationId: get-structure-by-id
       description: Get structure by id
@@ -415,7 +415,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
       description: Delete structure by structureId
   /v2/toggle:
@@ -431,7 +431,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '404':
+        '410':
           description: Not Found
         '409':
           description: Conflict
