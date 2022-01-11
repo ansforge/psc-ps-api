@@ -25,7 +25,7 @@ public class PsRef   {
   @JsonProperty("nationalIdRef")
   private String nationalIdRef;
 
-  @Indexed
+  @Indexed(unique = true)
   @JsonProperty("nationalId")
   @NotNull(message = "nationalId should not be null")
   private String nationalId;
