@@ -31,9 +31,12 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
     public ResponseEntity<Void> togglePsref(PsRef psRef) {
         // STEP 1: check if Ps is already toggled
         PsRef storedPsRef = psRefRepository.findPsRefByNationalIdRef(psRef.getNationalIdRef());
-        if (storedPsRef.rawEquals(psRef)) {
+        if (psRef.rawEquals(storedPsRef)) {
             log.info("PsRef {} already references Ps {}, no need to toggle", psRef.getNationalIdRef(), psRef.getNationalId());
             return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } else if (storedPsRef == null) {
+            log.info("No PsRef with id {} exists in database, no need to toggle", psRef.getNationalIdRef());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         // STEP 2: check if targeted Ps exists
