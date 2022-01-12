@@ -45,8 +45,10 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 
         // STEP 3: PHYSICALLY DELETE OLD PS
         Ps oldPs = psRepository.findByNationalId(psRef.getNationalIdRef());
-        mongoTemplate.remove(oldPs);
-        log.info("Ps {} successfully removed", oldPs.getNationalId());
+        if (oldPs != null) {
+            mongoTemplate.remove(oldPs);
+            log.info("Ps {} successfully removed", oldPs.getNationalId());
+        }
 
         // STEP 4: UPDATE DEPRECATED PSREF
         storedPsRef.setNationalId(psRef.getNationalId());
