@@ -425,16 +425,34 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '410':
+        '404':
           description: Not Found
+          content:
+            text/plain:
+              schema:
+                type: string
         '409':
           description: Conflict
+          content:
+            text/plain:
+              schema:
+                type: string
+        '410':
+          description: Gone
+          content:
+            text/plain:
+              schema:
+                type: string
       description: Toggle PsRef mapping
       requestBody:
         content:
