@@ -32,7 +32,8 @@ app "prosanteconnect/psc-api-maj-v2" {
       use "docker" {
         image = "${var.registry_path}/psc-api-maj"
         tag = gitrefpretty()
-        encoded_auth = filebase64("/secrets/dockerAuth.json")
+        username = var.registry_username
+        password = var.registry_password
       }
     }
   }
@@ -50,6 +51,16 @@ app "prosanteconnect/psc-api-maj-v2" {
 variable "datacenter" {
   type = string
   default = "dc1"
+}
+
+variable "registry_username" {
+  type = string
+  default = ""
+}
+
+variable "registry_password" {
+  type = string
+  default = ""
 }
 
 variable "proxy_address" {

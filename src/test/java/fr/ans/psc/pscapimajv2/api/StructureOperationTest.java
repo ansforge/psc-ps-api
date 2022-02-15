@@ -117,7 +117,7 @@ public class StructureOperationTest extends BaseOperationTest {
                         "\"streetNumber\":\"1\",\"streetNumberRepetitionIndex\":\"bis\",\"streetCategoryCode\":\"rue\",\"streetLabel\":\"Zorro\"," +
                         "\"distributionMention\":\"c/o Bernardo\",\"cedexOffice\":\"75117\",\"postalCode\":\"75017\",\"communeCode\":\"75\"," +
                         "\"countryCode\":\"FR\",\"phone\":\"0123456789\",\"phone2\":\"0623456789\",\"fax\":\"0198765432\","+
-                        "\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\",\"registrationAuthority\":\"CIA\"}"))
+                        "\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\"}"))
                 .andExpect(status().is(409));
 
         assertEquals(structureRepository.count(), 2);
