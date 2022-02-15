@@ -539,8 +539,6 @@ components:
           type: string
         oldStructureId:
           type: string
-        registrationAuthority:
-          type: string
       required:
         - structureTechnicalId
       x-examples:
@@ -569,7 +567,6 @@ components:
           email: structure@one.fr
           departmentCode: '99'
           oldStructureId: '101'
-          registrationAuthority: ARS/ARS/ARS
     WorkSituation:
       description: Situation d exercice
       type: object
@@ -585,6 +582,8 @@ components:
           type: string
         roleCode:
           type: string
+        registrationAuthority:
+          type: string
         structures:
           type: array
           items:
@@ -596,6 +595,7 @@ components:
           activitySectorCode: SA04
           pharmacistTableSectionCode: AC36
           roleCode: '12'
+          registrationAuthority: ARS/ARS/ARS
           structures:
             - structureId: '1'
     StructureRef:
