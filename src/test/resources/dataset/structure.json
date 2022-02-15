@@ -24,8 +24,7 @@
       "fax": "0198765432",
       "email": "structure@one.fr",
       "departmentCode": "99",
-      "oldStructureId": "101",
-      "registrationAuthority": "CIA"
+      "oldStructureId": "101"
     },
     {
       "siteSIRET": null,
@@ -51,8 +50,7 @@
       "fax": "0198765432",
       "email": "structure@two.fr",
       "departmentCode": "99",
-      "oldStructureId": "101",
-      "registrationAuthority": "CIA"
+      "oldStructureId": "101"
     }
   ]
 }

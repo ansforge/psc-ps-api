@@ -36,6 +36,7 @@
               "activitySectorCode": "SA04",
               "pharmacistTableSectionCode": "",
               "roleCode": "",
+              "registrationAuthority": "ARS/ARS/ARS",
               "structures": [
                 {
                   "structureId": "1"
