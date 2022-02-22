@@ -36,6 +36,7 @@
               "activitySectorCode": "SA04",
               "pharmacistTableSectionCode": "AC36",
               "roleCode": "12",
+              "registrationAuthority": "ARS/ARS/ARS",
               "structures": [
                 {
                   "structureId": "1"

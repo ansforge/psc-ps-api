@@ -94,9 +94,6 @@ public class Structure   {
   @JsonProperty("oldStructureId")
   private String oldStructureId;
 
-  @JsonProperty("registrationAuthority")
-  private String registrationAuthority;
-
 
   public String get_id() {
     return _id;
@@ -418,19 +415,6 @@ public class Structure   {
     this.oldStructureId = oldStructureId;
   }
 
-  /**
-   * Get registrationAuthority
-   * @return registrationAuthority
-  */
-  @ApiModelProperty(value = "")
-  public String getRegistrationAuthority() {
-    return registrationAuthority;
-  }
-
-  public void setRegistrationAuthority(String registrationAuthority) {
-    this.registrationAuthority = registrationAuthority;
-  }
-
 
   @Override
   public boolean equals(Object o) {
@@ -464,13 +448,12 @@ public class Structure   {
         Objects.equals(this.fax, structure.fax) &&
         Objects.equals(this.email, structure.email) &&
         Objects.equals(this.departmentCode, structure.departmentCode) &&
-        Objects.equals(this.oldStructureId, structure.oldStructureId) &&
-        Objects.equals(this.registrationAuthority, structure.registrationAuthority);
+        Objects.equals(this.oldStructureId, structure.oldStructureId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(siteSIRET, siteSIREN, siteFINESS, legalEstablishmentFINESS, structureTechnicalId, legalCommercialName, publicCommercialName, recipientAdditionalInfo, geoLocationAdditionalInfo, streetNumber, streetNumberRepetitionIndex, streetCategoryCode, streetLabel, distributionMention, cedexOffice, postalCode, communeCode, countryCode, phone, phone2, fax, email, departmentCode, oldStructureId, registrationAuthority);
+    return Objects.hash(siteSIRET, siteSIREN, siteFINESS, legalEstablishmentFINESS, structureTechnicalId, legalCommercialName, publicCommercialName, recipientAdditionalInfo, geoLocationAdditionalInfo, streetNumber, streetNumberRepetitionIndex, streetCategoryCode, streetLabel, distributionMention, cedexOffice, postalCode, communeCode, countryCode, phone, phone2, fax, email, departmentCode, oldStructureId);
   }
 
   @Override
@@ -502,7 +485,6 @@ public class Structure   {
     sb.append("    email: ").append(toIndentedString(email)).append("\n");
     sb.append("    departmentCode: ").append(toIndentedString(departmentCode)).append("\n");
     sb.append("    oldStructureId: ").append(toIndentedString(oldStructureId)).append("\n");
-    sb.append("    registrationAuthority: ").append(toIndentedString(registrationAuthority)).append("\n");
     sb.append("}");
     return sb.toString();
   }
