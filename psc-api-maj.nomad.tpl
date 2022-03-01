@@ -7,6 +7,11 @@ job "psc-api-maj-v2" {
       "psc-ecosystem"]
     change_mode = "restart"
   }
+  
+  affinity {
+    attribute = "$\u007Bnode.class\u007D"
+    value = "standard"
+  }
 
   group "psc-api-maj-v2" {
     count = "1"
