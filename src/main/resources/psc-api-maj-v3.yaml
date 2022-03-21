@@ -16,7 +16,7 @@ tags:
   - name: toggle
     description: toggle
 paths:
-  /v2/ps:
+  /v3/ps:
     post:
       summary: Create new Ps
       tags:
@@ -180,7 +180,7 @@ paths:
         required: true
       tags:
         - ps
-  '/v2/ps/{psId}':
+  '/v3/ps/{psId}':
     parameters:
       - schema:
           type: string
@@ -283,7 +283,7 @@ paths:
         '410':
           description: Not Found
       description: Delete a PS by its id
-  '/v2/ps/force/{psId}':
+  '/v3/ps/force/{psId}':
     parameters:
       - schema:
           type: string
@@ -307,7 +307,7 @@ paths:
         '410':
           description: Not Found
       description: completely delete Ps (not only deactivate it)
-  /v2/toggle:
+  /v3/toggle:
     put:
       summary: toggle PsRef mapping
       operationId: toggle-psref
