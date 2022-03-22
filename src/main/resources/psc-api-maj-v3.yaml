@@ -11,8 +11,6 @@ servers:
 tags:
   - name: ps
     description: ps
-  - name: structure
-    description: structure
   - name: toggle
     description: toggle
 paths:
