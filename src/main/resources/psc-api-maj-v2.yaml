@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: psc-api-maj-v2
-  version: '1.0'
+  version: '2.0'
   description: API CRUD for Personnels et Structures de santé
   contact:
     email: superviseurs.psc@esante.gouv.fr
@@ -14,7 +14,7 @@ tags:
   - name: toggle
     description: toggle
 paths:
-  /v3/ps:
+  /v2/ps:
     post:
       summary: Create new Ps
       tags:
@@ -70,31 +70,31 @@ paths:
                           activitySectorCode: SA04
                           pharmacistTableSectionCode: AC36
                           roleCode: '12'
-                          registrationAuthority: ARS/ARS/ARS
-                          siteSIRET: '12312312312345'
-                          siteSIREN: '123123123'
-                          siteFINESS: '260000451'
-                          legalEstablishmentFINESS: '260006912'
-                          structureTechnicalId: '1'
-                          legalCommercialName: Structure One
-                          publicCommercialName: Structure One
-                          recipientAdditionalInfo: info +
-                          geoLocationAdditionalInfo: geoloc info +
-                          streetNumber: '1'
-                          streetNumberRepetitionIndex: bis
-                          streetCategoryCode: rue
-                          streetLabel: de Paris
-                          distributionMention: c/o M. Dupont
-                          cedexOffice: '75117'
-                          postalCode: '75117'
-                          communeCode: '75117'
-                          countryCode: FR
-                          phone: '0123456789'
-                          phone2: '0623456789'
-                          fax: '0198765432'
-                          email: structure@one.fr
-                          departmentCode: '99'
-                          oldStructureId: '101'
+                          structure:
+                            - siteSIRET: '12312312312345'
+                              siteSIREN: '123123123'
+                              siteFINESS: '260000451'
+                              legalEstablishmentFINESS: '260006912'
+                              structureTechnicalId: '1'
+                              legalCommercialName: Structure One
+                              publicCommercialName: Structure One
+                              recipientAdditionalInfo: info +
+                              geoLocationAdditionalInfo: geoloc info +
+                              streetNumber: '1'
+                              streetNumberRepetitionIndex: bis
+                              streetCategoryCode: rue
+                              streetLabel: de Paris
+                              distributionMention: c/o M. Dupont
+                              cedexOffice: '75117'
+                              postalCode: '75117'
+                              communeCode: '75117'
+                              countryCode: FR
+                              phone: '0123456789'
+                              phone2: '0623456789'
+                              fax: '0198765432'
+                              email: structure@one.fr
+                              departmentCode: '99'
+                              oldStructureId: '101'
         description: The Ps to be created
         required: true
     put:
@@ -150,35 +150,35 @@ paths:
                           activitySectorCode: SA04
                           pharmacistTableSectionCode: AC36
                           roleCode: '12'
-                          registrationAuthority: ARS/ARS/ARS
-                          siteSIRET: '12312312312345'
-                          siteSIREN: '123123123'
-                          siteFINESS: '260000451'
-                          legalEstablishmentFINESS: '260006912'
-                          structureTechnicalId: '1'
-                          legalCommercialName: Structure One
-                          publicCommercialName: Structure One
-                          recipientAdditionalInfo: info +
-                          geoLocationAdditionalInfo: geoloc info +
-                          streetNumber: '1'
-                          streetNumberRepetitionIndex: bis
-                          streetCategoryCode: rue
-                          streetLabel: de Paris
-                          distributionMention: c/o M. Dupont
-                          cedexOffice: '75117'
-                          postalCode: '75117'
-                          communeCode: '75117'
-                          countryCode: FR
-                          phone: '0123456789'
-                          phone2: '0623456789'
-                          fax: '0198765432'
-                          email: structure@one.fr
-                          departmentCode: '99'
-                          oldStructureId: '101'
+                          structure:
+                            - siteSIRET: '12312312312345'
+                              siteSIREN: '123123123'
+                              siteFINESS: '260000451'
+                              legalEstablishmentFINESS: '260006912'
+                              structureTechnicalId: '1'
+                              legalCommercialName: Structure One
+                              publicCommercialName: Structure One
+                              recipientAdditionalInfo: info +
+                              geoLocationAdditionalInfo: geoloc info +
+                              streetNumber: '1'
+                              streetNumberRepetitionIndex: bis
+                              streetCategoryCode: rue
+                              streetLabel: de Paris
+                              distributionMention: c/o M. Dupont
+                              cedexOffice: '75117'
+                              postalCode: '75117'
+                              communeCode: '75117'
+                              countryCode: FR
+                              phone: '0123456789'
+                              phone2: '0623456789'
+                              fax: '0198765432'
+                              email: structure@one.fr
+                              departmentCode: '99'
+                              oldStructureId: '101'
         required: true
       tags:
         - ps
-  '/v3/ps/{psId}':
+  '/v2/ps/{psId}':
     parameters:
       - schema:
           type: string
@@ -230,31 +230,31 @@ paths:
                             activitySectorCode: SA04
                             pharmacistTableSectionCode: AC36
                             roleCode: '12'
-                            registrationAuthority: ARS/ARS/ARS
-                            siteSIRET: '12312312312345'
-                            siteSIREN: '123123123'
-                            siteFINESS: '260000451'
-                            legalEstablishmentFINESS: '260006912'
-                            structureTechnicalId: '1'
-                            legalCommercialName: Structure One
-                            publicCommercialName: Structure One
-                            recipientAdditionalInfo: info +
-                            geoLocationAdditionalInfo: geoloc info +
-                            streetNumber: '1'
-                            streetNumberRepetitionIndex: bis
-                            streetCategoryCode: rue
-                            streetLabel: de Paris
-                            distributionMention: c/o M. Dupont
-                            cedexOffice: '75117'
-                            postalCode: '75117'
-                            communeCode: '75117'
-                            countryCode: FR
-                            phone: '0123456789'
-                            phone2: '0623456789'
-                            fax: '0198765432'
-                            email: structure@one.fr
-                            departmentCode: '99'
-                            oldStructureId: '101'
+                            structure:
+                              - siteSIRET: '12312312312345'
+                                siteSIREN: '123123123'
+                                siteFINESS: '260000451'
+                                legalEstablishmentFINESS: '260006912'
+                                structureTechnicalId: '1'
+                                legalCommercialName: Structure One
+                                publicCommercialName: Structure One
+                                recipientAdditionalInfo: info +
+                                geoLocationAdditionalInfo: geoloc info +
+                                streetNumber: '1'
+                                streetNumberRepetitionIndex: bis
+                                streetCategoryCode: rue
+                                streetLabel: de Paris
+                                distributionMention: c/o M. Dupont
+                                cedexOffice: '75117'
+                                postalCode: '75117'
+                                communeCode: '75117'
+                                countryCode: FR
+                                phone: '0123456789'
+                                phone2: '0623456789'
+                                fax: '0198765432'
+                                email: structure@one.fr
+                                departmentCode: '99'
+                                oldStructureId: '101'
         '400':
           description: Bad Request
           content:
@@ -281,7 +281,7 @@ paths:
         '410':
           description: Not Found
       description: Delete a PS by its id
-  '/v3/ps/force/{psId}':
+  '/v2/ps/force/{psId}':
     parameters:
       - schema:
           type: string
@@ -305,7 +305,7 @@ paths:
         '410':
           description: Not Found
       description: completely delete Ps (not only deactivate it)
-  /v3/toggle:
+  /v2/toggle:
     put:
       summary: toggle PsRef mapping
       operationId: toggle-psref
@@ -373,21 +373,10 @@ components:
           expertiseId: SSM69
           typeCode: S
           code: SM69
-    WorkSituation:
-      description: Situation d exercice
+    Structure:
+      description: Structure de Santé
       type: object
       properties:
-        situId:
-          type: string
-        modeCode:
-          type: string
-          minLength: 1
-        activitySectorCode:
-          type: string
-        pharmacistTableSectionCode:
-          type: string
-        roleCode:
-          type: string
         siteSIRET:
           type: string
         siteSIREN:
@@ -437,16 +426,10 @@ components:
           type: string
         oldStructureId:
           type: string
-        registrationAuthority:
-          type: string
+      required:
+        - structureTechnicalId
       x-examples:
-        WorkSituationExample:
-          situId: SSA04
-          modeCode: S
-          activitySectorCode: SA04
-          pharmacistTableSectionCode: AC36
-          roleCode: '12'
-          registrationAuthority: ARS/ARS/ARS
+        StructureExample:
           siteSIRET: '12312312312345'
           siteSIREN: '123123123'
           siteFINESS: '260000451'
@@ -471,6 +454,58 @@ components:
           email: structure@one.fr
           departmentCode: '99'
           oldStructureId: '101'
+    WorkSituation:
+      description: Situation d exercice
+      type: object
+      properties:
+        situId:
+          type: string
+        modeCode:
+          type: string
+          minLength: 1
+        activitySectorCode:
+          type: string
+        pharmacistTableSectionCode:
+          type: string
+        roleCode:
+          type: string
+        registrationAuthority:
+          type: string
+        structure:
+          $ref: '#/components/schemas/Structure'
+      x-examples:
+        WorkSituationExample:
+          situId: SSA04
+          modeCode: S
+          activitySectorCode: SA04
+          pharmacistTableSectionCode: AC36
+          roleCode: '12'
+          registrationAuthority: ARS/ARS/ARS
+          structure:
+            - siteSIRET: '12312312312345'
+              siteSIREN: '123123123'
+              siteFINESS: '260000451'
+              legalEstablishmentFINESS: '260006912'
+              structureTechnicalId: '1'
+              legalCommercialName: Structure One
+              publicCommercialName: Structure One
+              recipientAdditionalInfo: info +
+              geoLocationAdditionalInfo: geoloc info +
+              streetNumber: '1'
+              streetNumberRepetitionIndex: bis
+              streetCategoryCode: rue
+              streetLabel: de Paris
+              distributionMention: c/o M. Dupont
+              cedexOffice: '75117'
+              postalCode: '75117'
+              communeCode: '75117'
+              countryCode: FR
+              phone: '0123456789'
+              phone2: '0623456789'
+              fax: '0198765432'
+              email: structure@one.fr
+              departmentCode: '99'
+              oldStructureId: '101'
     Profession:
       description: Profession
       type: object
@@ -513,31 +548,31 @@ components:
               activitySectorCode: SA04
               pharmacistTableSectionCode: AC36
               roleCode: '12'
-              registrationAuthority: ARS/ARS/ARS
-              siteSIRET: '12312312312345'
-              siteSIREN: '123123123'
-              siteFINESS: '260000451'
-              legalEstablishmentFINESS: '260006912'
-              structureTechnicalId: '1'
-              legalCommercialName: Structure One
-              publicCommercialName: Structure One
-              recipientAdditionalInfo: info +
-              geoLocationAdditionalInfo: geoloc info +
-              streetNumber: '1'
-              streetNumberRepetitionIndex: bis
-              streetCategoryCode: rue
-              streetLabel: de Paris
-              distributionMention: c/o M. Dupont
-              cedexOffice: '75117'
-              postalCode: '75117'
-              communeCode: '75117'
-              countryCode: FR
-              phone: '0123456789'
-              phone2: '0623456789'
-              fax: '0198765432'
-              email: structure@one.fr
-              departmentCode: '99'
-              oldStructureId: '101'
+              structure:
+                - siteSIRET: '12312312312345'
+                  siteSIREN: '123123123'
+                  siteFINESS: '260000451'
+                  legalEstablishmentFINESS: '260006912'
+                  structureTechnicalId: '1'
+                  legalCommercialName: Structure One
+                  publicCommercialName: Structure One
+                  recipientAdditionalInfo: info +
+                  geoLocationAdditionalInfo: geoloc info +
+                  streetNumber: '1'
+                  streetNumberRepetitionIndex: bis
+                  streetCategoryCode: rue
+                  streetLabel: de Paris
+                  distributionMention: c/o M. Dupont
+                  cedexOffice: '75117'
+                  postalCode: '75117'
+                  communeCode: '75117'
+                  countryCode: FR
+                  phone: '0123456789'
+                  phone2: '0623456789'
+                  fax: '0198765432'
+                  email: structure@one.fr
+                  departmentCode: '99'
+                  oldStructureId: '101'
     PsRef:
       description: Mapping identifier to Ps
       type: object
@@ -631,31 +666,31 @@ components:
                   activitySectorCode: SA04
                   pharmacistTableSectionCode: AC36
                   roleCode: '12'
-                  registrationAuthority: ARS/ARS/ARS
-                  siteSIRET: '12312312312345'
-                  siteSIREN: '123123123'
-                  siteFINESS: '260000451'
-                  legalEstablishmentFINESS: '260006912'
-                  structureTechnicalId: '1'
-                  legalCommercialName: Structure One
-                  publicCommercialName: Structure One
-                  recipientAdditionalInfo: info +
-                  geoLocationAdditionalInfo: geoloc info +
-                  streetNumber: '1'
-                  streetNumberRepetitionIndex: bis
-                  streetCategoryCode: rue
-                  streetLabel: de Paris
-                  distributionMention: c/o M. Dupont
-                  cedexOffice: '75117'
-                  postalCode: '75117'
-                  communeCode: '75117'
-                  countryCode: FR
-                  phone: '0123456789'
-                  phone2: '0623456789'
-                  fax: '0198765432'
-                  email: structure@one.fr
-                  departmentCode: '99'
-                  oldStructureId: '101'
+                  structure:
+                    - siteSIRET: '12312312312345'
+                      siteSIREN: '123123123'
+                      siteFINESS: '260000451'
+                      legalEstablishmentFINESS: '260006912'
+                      structureTechnicalId: '1'
+                      legalCommercialName: Structure One
+                      publicCommercialName: Structure One
+                      recipientAdditionalInfo: info +
+                      geoLocationAdditionalInfo: geoloc info +
+                      streetNumber: '1'
+                      streetNumberRepetitionIndex: bis
+                      streetCategoryCode: rue
+                      streetLabel: de Paris
+                      distributionMention: c/o M. Dupont
+                      cedexOffice: '75117'
+                      postalCode: '75117'
+                      communeCode: '75117'
+                      countryCode: FR
+                      phone: '0123456789'
+                      phone2: '0623456789'
+                      fax: '0198765432'
+                      email: structure@one.fr
+                      departmentCode: '99'
+                      oldStructureId: '101'
     Error:
       title: Error
       type: object

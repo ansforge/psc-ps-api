@@ -53,7 +53,7 @@ public class ToggleOperationTest extends BaseOperationTest {
         assertEquals(psRefRepository.findPsRefByNationalIdRef("01").getNationalId(), "01");
         assertEquals(psRefRepository.findPsRefByNationalIdRef("81").getNationalId(), "81");
 
-        ResultActions toggleOperation = mockMvc.perform(put("/api/v3/toggle").header("Accept", "application/json")
+        ResultActions toggleOperation = mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(200));
 
@@ -70,7 +70,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/after_toggle.json", cleanBefore = true, cleanAfter = true)
     @ExpectedMongoDataSet(value = "/dataset/after_toggle.json")
     public void alreadyDoneToggleFailed() throws Exception {
-        mockMvc.perform(put("/api/v3/toggle").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(409));
 
@@ -83,7 +83,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     @DisplayName(value = "should not toggle PsRef if target Ps does not exist")
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     public void absentTargetPsToggleFailed() throws Exception {
-        mockMvc.perform(put("/api/v3/toggle").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"89\"}"))
                 .andExpect(status().is(410));
 
@@ -97,16 +97,16 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     public void malformedPsRefToggleFailed() throws Exception {
         // with blank nationalIdRef
-        mockMvc.perform(put("/api/v3/toggle").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(400));
 
         // with blank nationalId
-        mockMvc.perform(put("/api/v3/toggle").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"\"}"))
                 .andExpect(status().is(400));
         // without nationalId
-        mockMvc.perform(put("/api/v3/toggle").header("Accept", "application/json")
+        mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\"}"))
                 .andExpect(status().is(400));
     }
