@@ -32,6 +32,9 @@ public class WorkSituation {
     @JsonProperty("roleCode")
     private String roleCode;
 
+    @JsonProperty("activityKindCode")
+    private String activityKindCode;
+
     @JsonProperty("registrationAuthority")
     private String registrationAuthority;
 
@@ -109,6 +112,16 @@ public class WorkSituation {
     }
 
     /**
+     * Get activityKindCode
+     *
+     * @return activityKindCode
+     */
+    @ApiModelProperty(value = "")
+    public String getActivityKindCode() { return activityKindCode; }
+
+    public void setActivityKindCode(String activityKindCode) { this.activityKindCode = activityKindCode; }
+
+    /**
      * Get registrationAuthority
      *
      * @return registrationAuthority
@@ -151,6 +164,7 @@ public class WorkSituation {
                 Objects.equals(this.activitySectorCode, workSituation.activitySectorCode) &&
                 Objects.equals(this.pharmacistTableSectionCode, workSituation.pharmacistTableSectionCode) &&
                 Objects.equals(this.roleCode, workSituation.roleCode) &&
+                Objects.equals(this.activityKindCode, workSituation.activityKindCode) &&
                 Objects.equals(this.registrationAuthority, workSituation.registrationAuthority) &&
                 Objects.equals(this.structure, workSituation.structure);
 
@@ -158,7 +172,7 @@ public class WorkSituation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(situId, modeCode, activitySectorCode, pharmacistTableSectionCode, roleCode, registrationAuthority, structure);
+        return Objects.hash(situId, modeCode, activitySectorCode, pharmacistTableSectionCode, roleCode, activityKindCode, registrationAuthority, structure);
     }
 
     @Override
@@ -171,6 +185,7 @@ public class WorkSituation {
         sb.append("    activitySectorCode: ").append(toIndentedString(activitySectorCode)).append("\n");
         sb.append("    pharmacistTableSectionCode: ").append(toIndentedString(pharmacistTableSectionCode)).append("\n");
         sb.append("    roleCode: ").append(toIndentedString(roleCode)).append("\n");
+        sb.append("    activityKindCode: ").append(toIndentedString(activityKindCode)).append("\n");
         sb.append("    registrationAuthority: ").append(toIndentedString(registrationAuthority)).append("\n");
         sb.append("}");
 
