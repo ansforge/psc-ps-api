@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +32,14 @@ public class WorkSituation {
     @JsonProperty("roleCode")
     private String roleCode;
 
+    @JsonProperty("activityKindCode")
+    private String activityKindCode;
+
     @JsonProperty("registrationAuthority")
     private String registrationAuthority;
 
-    @JsonProperty("structures")
-    @Valid
-    private List<StructureRef> structures = null;
+    @JsonProperty("structure")
+    private Structure structure;
 
     /**
      * Get situId
@@ -109,6 +112,16 @@ public class WorkSituation {
     }
 
     /**
+     * Get activityKindCode
+     *
+     * @return activityKindCode
+     */
+    @ApiModelProperty(value = "")
+    public String getActivityKindCode() { return activityKindCode; }
+
+    public void setActivityKindCode(String activityKindCode) { this.activityKindCode = activityKindCode; }
+
+    /**
      * Get registrationAuthority
      *
      * @return registrationAuthority
@@ -123,18 +136,17 @@ public class WorkSituation {
     }
 
     /**
-     * Get structures
+     * Get situId
      *
-     * @return structures
+     * @return situId
      */
     @ApiModelProperty(value = "")
-    @Valid
-    public List<StructureRef> getStructures() {
-        return structures;
+    public Structure getStructure() {
+        return structure;
     }
 
-    public void setStructures(List<StructureRef> structures) {
-        this.structures = structures;
+    public void setStructure(Structure structure) {
+        this.structure = structure;
     }
 
 
@@ -152,13 +164,15 @@ public class WorkSituation {
                 Objects.equals(this.activitySectorCode, workSituation.activitySectorCode) &&
                 Objects.equals(this.pharmacistTableSectionCode, workSituation.pharmacistTableSectionCode) &&
                 Objects.equals(this.roleCode, workSituation.roleCode) &&
+                Objects.equals(this.activityKindCode, workSituation.activityKindCode) &&
                 Objects.equals(this.registrationAuthority, workSituation.registrationAuthority) &&
-                Objects.equals(this.structures, workSituation.structures);
+                Objects.equals(this.structure, workSituation.structure);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(situId, modeCode, activitySectorCode, pharmacistTableSectionCode, roleCode, registrationAuthority, structures);
+        return Objects.hash(situId, modeCode, activitySectorCode, pharmacistTableSectionCode, roleCode, activityKindCode, registrationAuthority, structure);
     }
 
     @Override
@@ -171,9 +185,10 @@ public class WorkSituation {
         sb.append("    activitySectorCode: ").append(toIndentedString(activitySectorCode)).append("\n");
         sb.append("    pharmacistTableSectionCode: ").append(toIndentedString(pharmacistTableSectionCode)).append("\n");
         sb.append("    roleCode: ").append(toIndentedString(roleCode)).append("\n");
+        sb.append("    activityKindCode: ").append(toIndentedString(activityKindCode)).append("\n");
         sb.append("    registrationAuthority: ").append(toIndentedString(registrationAuthority)).append("\n");
-        sb.append("    structures: ").append(toIndentedString(structures)).append("\n");
         sb.append("}");
+
         return sb.toString();
     }
 

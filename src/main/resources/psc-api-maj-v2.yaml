@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: psc-api-maj-v2
-  version: '1.0'
+  version: '2.0'
   description: API CRUD for Personnels et Structures de santé
   contact:
     email: superviseurs.psc@esante.gouv.fr
@@ -11,8 +11,6 @@ servers:
 tags:
   - name: ps
     description: ps
-  - name: structure
-    description: structure
   - name: toggle
     description: toggle
 paths:
@@ -72,8 +70,31 @@ paths:
                           activitySectorCode: SA04
                           pharmacistTableSectionCode: AC36
                           roleCode: '12'
-                          structures:
-                            - structureId: '1'
+                          structure:
+                            - siteSIRET: '12312312312345'
+                              siteSIREN: '123123123'
+                              siteFINESS: '260000451'
+                              legalEstablishmentFINESS: '260006912'
+                              structureTechnicalId: '1'
+                              legalCommercialName: Structure One
+                              publicCommercialName: Structure One
+                              recipientAdditionalInfo: info +
+                              geoLocationAdditionalInfo: geoloc info +
+                              streetNumber: '1'
+                              streetNumberRepetitionIndex: bis
+                              streetCategoryCode: rue
+                              streetLabel: de Paris
+                              distributionMention: c/o M. Dupont
+                              cedexOffice: '75117'
+                              postalCode: '75117'
+                              communeCode: '75117'
+                              countryCode: FR
+                              phone: '0123456789'
+                              phone2: '0623456789'
+                              fax: '0198765432'
+                              email: structure@one.fr
+                              departmentCode: '99'
+                              oldStructureId: '101'
         description: The Ps to be created
         required: true
     put:
@@ -129,8 +150,31 @@ paths:
                           activitySectorCode: SA04
                           pharmacistTableSectionCode: AC36
                           roleCode: '12'
-                          structures:
-                            - structureId: '1'
+                          structure:
+                            - siteSIRET: '12312312312345'
+                              siteSIREN: '123123123'
+                              siteFINESS: '260000451'
+                              legalEstablishmentFINESS: '260006912'
+                              structureTechnicalId: '1'
+                              legalCommercialName: Structure One
+                              publicCommercialName: Structure One
+                              recipientAdditionalInfo: info +
+                              geoLocationAdditionalInfo: geoloc info +
+                              streetNumber: '1'
+                              streetNumberRepetitionIndex: bis
+                              streetCategoryCode: rue
+                              streetLabel: de Paris
+                              distributionMention: c/o M. Dupont
+                              cedexOffice: '75117'
+                              postalCode: '75117'
+                              communeCode: '75117'
+                              countryCode: FR
+                              phone: '0123456789'
+                              phone2: '0623456789'
+                              fax: '0198765432'
+                              email: structure@one.fr
+                              departmentCode: '99'
+                              oldStructureId: '101'
         required: true
       tags:
         - ps
@@ -186,8 +230,31 @@ paths:
                             activitySectorCode: SA04
                             pharmacistTableSectionCode: AC36
                             roleCode: '12'
-                            structures:
-                              - structureId: '1'
+                            structure:
+                              - siteSIRET: '12312312312345'
+                                siteSIREN: '123123123'
+                                siteFINESS: '260000451'
+                                legalEstablishmentFINESS: '260006912'
+                                structureTechnicalId: '1'
+                                legalCommercialName: Structure One
+                                publicCommercialName: Structure One
+                                recipientAdditionalInfo: info +
+                                geoLocationAdditionalInfo: geoloc info +
+                                streetNumber: '1'
+                                streetNumberRepetitionIndex: bis
+                                streetCategoryCode: rue
+                                streetLabel: de Paris
+                                distributionMention: c/o M. Dupont
+                                cedexOffice: '75117'
+                                postalCode: '75117'
+                                communeCode: '75117'
+                                countryCode: FR
+                                phone: '0123456789'
+                                phone2: '0623456789'
+                                fax: '0198765432'
+                                email: structure@one.fr
+                                departmentCode: '99'
+                                oldStructureId: '101'
         '400':
           description: Bad Request
           content:
@@ -238,186 +305,6 @@ paths:
         '410':
           description: Not Found
       description: completely delete Ps (not only deactivate it)
-  /v2/structure:
-    post:
-      summary: Create new structure
-      tags:
-        - structure
-      operationId: create-new-structure
-      responses:
-        '201':
-          description: Created
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '409':
-          description: Conflict
-          content:
-            application/json:
-              schema:
-                type: object
-      description: Create a new structure
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Structure'
-            examples:
-              StructureExample:
-                value:
-                  siteSIRET: '12312312312345'
-                  siteSIREN: '123123123'
-                  siteFINESS: '260000451'
-                  legalEstablishmentFINESS: '260006912'
-                  structureTechnicalId: '1'
-                  legalCommercialName: Structure One
-                  publicCommercialName: Structure One
-                  recipientAdditionalInfo: info +
-                  geoLocationAdditionalInfo: geoloc info +
-                  streetNumber: '1'
-                  streetNumberRepetitionIndex: bis
-                  streetCategoryCode: rue
-                  streetLabel: de Paris
-                  distributionMention: c/o M. Dupont
-                  cedexOffice: '75117'
-                  postalCode: '75117'
-                  communeCode: '75117'
-                  countryCode: FR
-                  phone: '0123456789'
-                  phone2: '0623456789'
-                  fax: '0198765432'
-                  email: structure@one.fr
-                  departmentCode: '99'
-                  oldStructureId: '101'
-                  registrationAuthority: ARS/ARS/ARS
-        required: true
-    put:
-      summary: Update structure
-      tags:
-        - structure
-      operationId: update-structure
-      responses:
-        '200':
-          description: OK
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '410':
-          description: Not Found
-      description: Update structure
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Structure'
-            examples:
-              StructureExample:
-                value:
-                  siteSIRET: '12312312312345'
-                  siteSIREN: '123123123'
-                  siteFINESS: '260000451'
-                  legalEstablishmentFINESS: '260006912'
-                  structureTechnicalId: '1'
-                  legalCommercialName: Structure One
-                  publicCommercialName: Structure One
-                  recipientAdditionalInfo: info +
-                  geoLocationAdditionalInfo: geoloc info +
-                  streetNumber: '1'
-                  streetNumberRepetitionIndex: bis
-                  streetCategoryCode: rue
-                  streetLabel: de Paris
-                  distributionMention: c/o M. Dupont
-                  cedexOffice: '75117'
-                  postalCode: '75117'
-                  communeCode: '75117'
-                  countryCode: FR
-                  phone: '0123456789'
-                  phone2: '0623456789'
-                  fax: '0198765432'
-                  email: structure@one.fr
-                  departmentCode: '99'
-                  oldStructureId: '101'
-                  registrationAuthority: ARS/ARS/ARS
-        required: true
-  '/v2/structure/{structureId}':
-    parameters:
-      - schema:
-          type: string
-        name: structureId
-        in: path
-        required: true
-    get:
-      summary: Get structure by id
-      tags:
-        - structure
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Structure'
-              examples:
-                example-1:
-                  value:
-                    siteSIRET: string
-                    siteSIREN: string
-                    siteFINESS: string
-                    legalEstablishmentFINESS: string
-                    structureTechnicalId: string
-                    legalCommercialName: string
-                    publicCommercialName: string
-                    recipientAdditionalInfo: string
-                    geoLocationAdditionalInfo: string
-                    streetNumber: string
-                    streetNumberRepetitionIndex: string
-                    streetCategoryCode: string
-                    streetLabel: string
-                    distributionMention: string
-                    cedexOffice: string
-                    postalCode: string
-                    communeCode: string
-                    countryCode: string
-                    phone: string
-                    phone2: string
-                    fax: string
-                    email: string
-                    departmentCode: string
-                    oldStructureId: string
-                    registrationAuthority: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '410':
-          description: Not Found
-      operationId: get-structure-by-id
-      description: Get structure by id
-    delete:
-      summary: Delete structure by id
-      tags:
-        - structure
-      operationId: delete-structure-by-structureId
-      responses:
-        '204':
-          description: No Content
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '410':
-          description: Not Found
-      description: Delete structure by structureId
   /v2/toggle:
     put:
       summary: toggle PsRef mapping
@@ -584,10 +471,8 @@ components:
           type: string
         registrationAuthority:
           type: string
-        structures:
-          type: array
-          items:
-            $ref: '#/components/schemas/StructureRef'
+        structure:
+          $ref: '#/components/schemas/Structure'
       x-examples:
         WorkSituationExample:
           situId: SSA04
@@ -596,19 +481,31 @@ components:
           pharmacistTableSectionCode: AC36
           roleCode: '12'
           registrationAuthority: ARS/ARS/ARS
-          structures:
-            - structureId: '1'
-    StructureRef:
-      description: Structure reference
-      type: object
-      properties:
-        structureId:
-          type: string
-      required:
-        - structureId
-      x-examples:
-        StructureRefExample:
-          structureId: '1'
+          structure:
+            - siteSIRET: '12312312312345'
+              siteSIREN: '123123123'
+              siteFINESS: '260000451'
+              legalEstablishmentFINESS: '260006912'
+              structureTechnicalId: '1'
+              legalCommercialName: Structure One
+              publicCommercialName: Structure One
+              recipientAdditionalInfo: info +
+              geoLocationAdditionalInfo: geoloc info +
+              streetNumber: '1'
+              streetNumberRepetitionIndex: bis
+              streetCategoryCode: rue
+              streetLabel: de Paris
+              distributionMention: c/o M. Dupont
+              cedexOffice: '75117'
+              postalCode: '75117'
+              communeCode: '75117'
+              countryCode: FR
+              phone: '0123456789'
+              phone2: '0623456789'
+              fax: '0198765432'
+              email: structure@one.fr
+              departmentCode: '99'
+              oldStructureId: '101'
     Profession:
       description: Profession
       type: object
@@ -651,8 +548,31 @@ components:
               activitySectorCode: SA04
               pharmacistTableSectionCode: AC36
               roleCode: '12'
-              structures:
-                - structureId: '1'
+              structure:
+                - siteSIRET: '12312312312345'
+                  siteSIREN: '123123123'
+                  siteFINESS: '260000451'
+                  legalEstablishmentFINESS: '260006912'
+                  structureTechnicalId: '1'
+                  legalCommercialName: Structure One
+                  publicCommercialName: Structure One
+                  recipientAdditionalInfo: info +
+                  geoLocationAdditionalInfo: geoloc info +
+                  streetNumber: '1'
+                  streetNumberRepetitionIndex: bis
+                  streetCategoryCode: rue
+                  streetLabel: de Paris
+                  distributionMention: c/o M. Dupont
+                  cedexOffice: '75117'
+                  postalCode: '75117'
+                  communeCode: '75117'
+                  countryCode: FR
+                  phone: '0123456789'
+                  phone2: '0623456789'
+                  fax: '0198765432'
+                  email: structure@one.fr
+                  departmentCode: '99'
+                  oldStructureId: '101'
     PsRef:
       description: Mapping identifier to Ps
       type: object
@@ -746,8 +666,31 @@ components:
                   activitySectorCode: SA04
                   pharmacistTableSectionCode: AC36
                   roleCode: '12'
-                  structures:
-                    - structureId: '1'
+                  structure:
+                    - siteSIRET: '12312312312345'
+                      siteSIREN: '123123123'
+                      siteFINESS: '260000451'
+                      legalEstablishmentFINESS: '260006912'
+                      structureTechnicalId: '1'
+                      legalCommercialName: Structure One
+                      publicCommercialName: Structure One
+                      recipientAdditionalInfo: info +
+                      geoLocationAdditionalInfo: geoloc info +
+                      streetNumber: '1'
+                      streetNumberRepetitionIndex: bis
+                      streetCategoryCode: rue
+                      streetLabel: de Paris
+                      distributionMention: c/o M. Dupont
+                      cedexOffice: '75117'
+                      postalCode: '75117'
+                      communeCode: '75117'
+                      countryCode: FR
+                      phone: '0123456789'
+                      phone2: '0623456789'
+                      fax: '0198765432'
+                      email: structure@one.fr
+                      departmentCode: '99'
+                      oldStructureId: '101'
     Error:
       title: Error
       type: object
