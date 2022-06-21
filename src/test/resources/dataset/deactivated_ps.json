@@ -66,6 +66,14 @@
             }
           ]
         }
+      ],
+      "psRefs": [
+        {
+        "nationalIdRef": "800000000002",
+        "nationalId": "800000000002",
+        "activated": 1638791221,
+        "deactivated": 1638791501
+        }
       ]
     }
   ],
