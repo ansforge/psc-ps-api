@@ -632,6 +632,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Profession'
+        psRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PsRef'
       required:
         - nationalId
       x-examples:
@@ -691,6 +695,11 @@ components:
                       email: structure@one.fr
                       departmentCode: '99'
                       oldStructureId: '101'
+          psRefs:
+            - nationalIdRef: '800000000002'
+              nationalId: '800000000002'
+              activated: '1638791221'
+              deactivated: null
     Error:
       title: Error
       type: object
