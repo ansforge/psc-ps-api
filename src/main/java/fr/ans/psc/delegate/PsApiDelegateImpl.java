@@ -33,18 +33,27 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     @Override
     public ResponseEntity<Ps> getPsById(String encodedPsId) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
-        PsRef psRef = psRefRepository.findPsRefByNationalIdRef(psId);
+        String operationLog;
 
-        // check if PsRef exists and is activated
-        if (!ApiUtils.isPsRefActivated(psRef)) {
-            String operationLog = psRef == null ? "No Ps found with nationalIdRef {}" : "Ps {} is deactivated";
+        Ps ps = psRepository.findByPsRefsNationalIdRef(psId);
+
+        // check if Ps containing a PsRef with that nationalIdRef exists
+        if (ps == null) {
+            operationLog = "No Ps found with nationalIdRef {}";
             log.warn(operationLog, psId);
             return new ResponseEntity<>(HttpStatus.GONE);
         }
 
-        String nationalId = psRef.getNationalId();
-        Ps ps = psRepository.findByNationalId(nationalId);
-        log.info("Ps {} has been found", nationalId);
+        PsRef psRef = ps.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals(psId)).findFirst().orElse(null);
+
+        // check if PsRef eis activated
+        if (!ApiUtils.isPsRefActivated(psRef)) {
+            operationLog = "Ps {} is deactivated";
+            log.warn(operationLog, psId);
+            return new ResponseEntity<>(HttpStatus.GONE);
+        }
+
+        log.info("Ps {} has been found", ps.getNationalId());
         return new ResponseEntity<>(ps, HttpStatus.OK);
     }
 
