@@ -67,6 +67,8 @@ public class Ps   {
   @Valid
   private List<Profession> professions = null;
 
+  @JsonProperty("psRefs")
+  private List<PsRef> psRefs = null;
 
   public String get_id() {
     return _id;
@@ -261,6 +263,19 @@ public class Ps   {
     this.professions = professions;
   }
 
+  /**
+   * Get professions
+   * @return psRefs
+   */
+  @ApiModelProperty(value = "")
+  @Valid
+  public List<PsRef> getPsRefs() {
+    return psRefs;
+  }
+
+  public void setPsRefs(List<PsRef> psRefs) {
+    this.psRefs = psRefs;
+  }
 
   @Override
   public boolean equals(Object o) {
