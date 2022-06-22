@@ -16,9 +16,6 @@ import javax.validation.constraints.*;
 @ApiModel(description = "Mapping identifier to Ps")
 public class PsRef   {
 
-  @Id
-  private String _id;
-
   @Indexed(unique = true)
   @NotNull(message = "nationalIdRef should not be null")
   @JsonProperty("nationalIdRef")
@@ -42,14 +39,6 @@ public class PsRef   {
     this.nationalIdRef = nationalIdRef;
     this.nationalId = nationalId;
     this.activated = activated;
-  }
-
-  public String get_id() {
-    return _id;
-  }
-
-  public void set_id(String _id) {
-    this._id = _id;
   }
 
   /**
