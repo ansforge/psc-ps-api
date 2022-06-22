@@ -1,22 +1,24 @@
 {
-  "fr.ans.psc.model.PsRef": [
-    {
-      "nationalIdRef": "01",
-      "nationalId": "01",
-      "activated": 1638791221
-    },
-    {
-      "nationalIdRef": "81",
-      "nationalId": "81",
-      "activated": 1638791221
-    }
-  ],
   "fr.ans.psc.model.Ps": [
     {
-      "nationalId": "01"
+      "nationalId": "01",
+      "psRefs": [
+        {
+          "nationalIdRef": "01",
+          "nationalId": "01",
+          "activated": 1638791221
+        }
+      ]
     },
     {
-      "nationalId": "81"
+      "nationalId": "81",
+      "psRefs": [
+        {
+          "nationalIdRef": "81",
+          "nationalId": "81",
+          "activated": 1638791221
+        }
+      ]
     }
   ]
 }

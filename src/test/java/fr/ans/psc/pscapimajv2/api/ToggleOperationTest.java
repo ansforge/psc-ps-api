@@ -6,8 +6,9 @@ import ch.qos.logback.classic.LoggerContext;
 import com.jupiter.tools.spring.test.mongo.annotation.ExpectedMongoDataSet;
 import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
 import fr.ans.psc.delegate.ToggleApiDelegateImpl;
-import fr.ans.psc.repository.PsRefRepository;
+import fr.ans.psc.model.Ps;
 import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
+import fr.ans.psc.repository.PsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ToggleOperationTest extends BaseOperationTest {
 
     @Autowired
-    private PsRefRepository psRefRepository;
+    private PsRepository psRepository;
 
     @BeforeEach
     public void setUp(WebApplicationContext context, RestDocumentationContextProvider restDocProvider) {
@@ -50,19 +51,22 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     @ExpectedMongoDataSet(value = "/dataset/after_toggle.json")
     public void togglePsRef() throws Exception {
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("01").getNationalId(), "01");
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("81").getNationalId(), "81");
+        Ps ps1 = psRepository.findByPsRefsNationalIdRef("01");
+        Ps ps2 = psRepository.findByPsRefsNationalIdRef("81");
+        assertEquals(ps1.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("01")).findFirst().orElse(null).getNationalId(), "01");
+        assertEquals(ps2.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("81")).findFirst().orElse(null).getNationalId(), "81");
 
         ResultActions toggleOperation = mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
+                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(200));
 
         toggleOperation.andDo(document("ToggleOperationTest/toggle_psref"));
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 01 is now referencing Ps 81", Level.INFO)).isTrue();
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("01").getNationalId(), "81");
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("81").getNationalId(), "81");
+        Ps finalPs = psRepository.findByNationalId("81");
+        assertEquals(finalPs.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("01")).findFirst().orElse(null).getNationalId(), "81");
+        assertEquals(finalPs.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("81")).findFirst().orElse(null).getNationalId(), "81");
     }
 
     @Test
@@ -71,7 +75,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     @ExpectedMongoDataSet(value = "/dataset/after_toggle.json")
     public void alreadyDoneToggleFailed() throws Exception {
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
+                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(409));
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isFalse();
@@ -84,7 +88,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     public void absentTargetPsToggleFailed() throws Exception {
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"89\"}"))
+                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"89\"}"))
                 .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isFalse();
@@ -98,16 +102,16 @@ public class ToggleOperationTest extends BaseOperationTest {
     public void malformedPsRefToggleFailed() throws Exception {
         // with blank nationalIdRef
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                .contentType("application/json").content("{\"nationalIdRef\": \"\", \"nationalId\": \"81\"}"))
+                        .contentType("application/json").content("{\"nationalIdRef\": \"\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(400));
 
         // with blank nationalId
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"\"}"))
+                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"\"}"))
                 .andExpect(status().is(400));
         // without nationalId
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                .contentType("application/json").content("{\"nationalIdRef\": \"01\"}"))
+                        .contentType("application/json").content("{\"nationalIdRef\": \"01\"}"))
                 .andExpect(status().is(400));
     }
 }
