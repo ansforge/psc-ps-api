@@ -13,7 +13,6 @@ import javax.validation.constraints.*;
 /**
  * Mapping identifier to Ps
  */
-@Document(collection = "psref")
 @ApiModel(description = "Mapping identifier to Ps")
 public class PsRef   {
 

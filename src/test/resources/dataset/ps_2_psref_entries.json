@@ -79,17 +79,5 @@
         }
       ]
     }
-  ],
-  "fr.ans.psc.model.PsRef": [
-    {
-      "nationalIdRef": "800000000001",
-      "nationalId": "800000000001",
-      "activated": 1638791221
-    },
-    {
-      "nationalIdRef": "800000000011",
-      "nationalId": "800000000001",
-      "activated": 1638791225
-    }
   ]
 }

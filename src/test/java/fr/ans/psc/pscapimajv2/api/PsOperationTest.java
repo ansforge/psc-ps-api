@@ -16,7 +16,6 @@ import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
 import fr.ans.psc.delegate.PsApiDelegateImpl;
 import fr.ans.psc.model.Ps;
 import fr.ans.psc.model.PsRef;
-import fr.ans.psc.repository.PsRefRepository;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
@@ -37,8 +36,6 @@ public class PsOperationTest extends BaseOperationTest {
 
     @Autowired
     private PsRepository psRepository;
-    @Autowired
-    private PsRefRepository psRefRepository;
 
     @BeforeEach
     public void setUp(WebApplicationContext context, RestDocumentationContextProvider restDocProvider) {
@@ -150,7 +147,8 @@ public class PsOperationTest extends BaseOperationTest {
                         "\"streetCategoryCode\":\"rue\",\"streetLabel\":\"Zorro\",\"distributionMention\":\"c/o Bernardo\",\"cedexOffice\":\"75117\"," +
                         "\"postalCode\":\"75017\",\"communeCode\":\"75\",\"countryCode\":\"FR\",\"phone\":\"0123456789\",\"phone2\":\"0623456789\"," +
                         "\"fax\":\"0198765432\",\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\"," +
-                        "\"registrationAuthority\":\"CIA\"}}]}]}"))
+                        "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000001\",\"nationalId\": \"800000000001\","+
+                        "\"activated\": 1638791221}]}"))
                 .andExpect(status().is(201));
         assertThat(memoryAppender.contains("Ps 800000000001 successfully stored or updated", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 800000000001 has been reactivated", Level.INFO)).isFalse();
@@ -230,8 +228,11 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("Ps 800000000001 successfully deleted", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000011 successfully deleted", Level.INFO)).isTrue();
 
-        PsRef psRef1 = psRefRepository.findPsRefByNationalIdRef("800000000001");
-        PsRef psRef2 = psRefRepository.findPsRefByNationalIdRef("800000000011");
+        Ps ps = psRepository.findByPsRefsNationalIdRef("800000000001");
+        Ps ps2 = psRepository.findByPsRefsNationalIdRef("800000000011");
+
+        PsRef psRef1 = ps.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("800000000001")).findFirst().orElse(null);
+        PsRef psRef2 = ps2.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("800000000011")).findFirst().orElse(null);
 
         assertThat(ApiUtils.isPsRefActivated(psRef1)).isFalse();
         assertThat(ApiUtils.isPsRefActivated(psRef2)).isFalse();
@@ -297,7 +298,7 @@ public class PsOperationTest extends BaseOperationTest {
                         "}"))
                 .andExpect(status().is(410));
 
-        assertThat(memoryAppender.contains("No Ps found with nationalId 800000000002, can not update it", Level.WARN)).isTrue();
+        assertThat(memoryAppender.contains("Ps 800000000002 is deactivated, can not update it", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000002 successfully updated", Level.INFO)).isFalse();
     }
 
@@ -334,11 +335,15 @@ public class PsOperationTest extends BaseOperationTest {
 
         assertThat(memoryAppender.contains("No Ps found with id 800000000001, could not delete it", Level.WARN)).isFalse();
         assertThat(memoryAppender.contains("Ps 800000000001 successfully deleted", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000001 pointing on Ps 800000000001 successfully removed", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000011 pointing on Ps 800000000001 successfully removed", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000002 successfully deleted", Level.INFO)).isFalse();
 
-        assertEquals(psRefRepository.count(), 2);
+        Integer psRefCount = 0;
+        for (Ps ps : psRepository.findAll()) {
+            if (ps.getPsRefs() != null)
+                psRefCount += ps.getPsRefs().size();
+        }
+
+        assertEquals(psRefCount, 2);
         assertEquals(psRepository.count(), 2);
 
         // physical delete of deactivated Ps
@@ -347,9 +352,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .andExpect(status().is(204));
 
         assertThat(memoryAppender.contains("Ps 800000000002 successfully deleted", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000002 pointing on Ps 800000000002 successfully removed", Level.INFO)).isTrue();
 
-        assertEquals(psRefRepository.count(), 1);
+        psRefCount = 0;
+        for (Ps ps : psRepository.findAll()) {
+            psRefCount += ps.getPsRefs().size();
+        }
+
+        assertEquals(psRefCount, 1);
         assertEquals(psRepository.count(), 1);
     }
 }

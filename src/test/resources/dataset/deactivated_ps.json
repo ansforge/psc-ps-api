@@ -69,20 +69,12 @@
       ],
       "psRefs": [
         {
-        "nationalIdRef": "800000000002",
-        "nationalId": "800000000002",
-        "activated": 1638791221,
-        "deactivated": 1638791501
+          "nationalIdRef": "800000000002",
+          "nationalId": "800000000002",
+          "activated": 1638791221,
+          "deactivated": 1638791501
         }
       ]
-    }
-  ],
-  "fr.ans.psc.model.PsRef": [
-    {
-      "nationalIdRef": "800000000002",
-      "nationalId": "800000000002",
-      "activated": 1638791221,
-      "deactivated": 1638791501
     }
   ]
 }
