@@ -5,7 +5,9 @@
       "id": "0000000000/1",
       "nationalId": "80000000000/1",
       "lastName": "DUPONT",
-      "firstName": "JIMMY''",
+      "firstName": [
+        "JIMMY"
+      ],
       "dateOfBirth": "17/12/1983",
       "birthAddressCode": "57463",
       "birthCountryCode": "99000",
@@ -21,7 +23,9 @@
           "categoryCode": "C",
           "salutationCode": "M",
           "lastName": "DUPONT",
-          "firstName": "JIMMY",
+          "firstName": [
+            "JIMMY"
+          ],
           "expertises": [
             {
               "expertiseId": "SSM69",

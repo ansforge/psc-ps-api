@@ -134,10 +134,10 @@ public class PsOperationTest extends BaseOperationTest {
 
         ResultActions createdPs = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000001\"," +
-                        "\"nationalId\":\"800000000001\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY''\",\"dateOfBirth\":\"17/12/1983\"," +
+                        "\"nationalId\":\"800000000001\",\"lastName\":\"DUPONT\",\"firstName\":[\"JIMMY\"],\"dateOfBirth\":\"17/12/1983\"," +
                         "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
                         "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\"," +
-                        "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY\"," +
+                        "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":[\"JIMMY\"]," +
                         "\"expertises\":[{\"expertiseId\":\"SSM69\",\"typeCode\":\"S\",\"code\":\"SM69\"}],\"workSituations\":[{\"situId\":\"SSA04\"," +
                         "\"modeCode\":\"S\",\"activitySectorCode\":\"SA04\",\"pharmacistTableSectionCode\":\"AC36\",\"roleCode\":\"12\"," +
                         "\"registrationAuthority\":\"ARS/ARS/ARS\",\"structure\":{\"siteSIRET\":\"125 137 196 15574\",\"siteSIREN\":\"125 137 196\"," +

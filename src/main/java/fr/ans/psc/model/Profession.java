@@ -4,7 +4,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.ArrayList;
+
 import java.util.List;
 import javax.validation.Valid;
 
@@ -29,7 +29,7 @@ public class Profession   {
   private String lastName;
 
   @JsonProperty("firstName")
-  private String firstName;
+  private List<String> firstName;
 
   @JsonProperty("expertises")
   @Valid
@@ -114,11 +114,11 @@ public class Profession   {
    * @return firstName
   */
   @ApiModelProperty(value = "")
-  public String getFirstName() {
+  public List<String> getFirstName() {
     return firstName;
   }
 
-  public void setFirstName(String firstName) {
+  public void setFirstName(List<String> firstName) {
     this.firstName = firstName;
   }
 

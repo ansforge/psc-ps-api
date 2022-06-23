@@ -38,7 +38,7 @@ public class Ps   {
   private String lastName;
 
   @JsonProperty("firstName")
-  private String firstName;
+  private List<String> firstName;
 
   @JsonProperty("dateOfBirth")
   private String dateOfBirth;
@@ -145,11 +145,11 @@ public class Ps   {
    * @return firstName
   */
   @ApiModelProperty(value = "")
-  public String getFirstName() {
+  public List<String> getFirstName() {
     return firstName;
   }
 
-  public void setFirstName(String firstName) {
+  public void setFirstName(List<String> firstName) {
     this.firstName = firstName;
   }
 
