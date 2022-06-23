@@ -58,7 +58,7 @@ public class ToggleOperationTest extends BaseOperationTest {
         assertTrue(ps2.getIds().contains("81"));
 
         ResultActions toggleOperation = mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
+                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(200));
 
         toggleOperation.andDo(document("ToggleOperationTest/toggle_psref"));
@@ -76,7 +76,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     @ExpectedMongoDataSet(value = "/dataset/after_toggle.json")
     public void alreadyDoneToggleFailed() throws Exception {
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
+                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(409));
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isFalse();
@@ -89,7 +89,7 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     public void absentTargetPsToggleFailed() throws Exception {
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"89\"}"))
+                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"89\"}"))
                 .andExpect(status().is(410));
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isFalse();
@@ -103,16 +103,16 @@ public class ToggleOperationTest extends BaseOperationTest {
     public void malformedPsRefToggleFailed() throws Exception {
         // with blank nationalIdRef
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                        .contentType("application/json").content("{\"nationalIdRef\": \"\", \"nationalId\": \"81\"}"))
+                .contentType("application/json").content("{\"nationalIdRef\": \"\", \"nationalId\": \"81\"}"))
                 .andExpect(status().is(400));
 
         // with blank nationalId
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                        .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"\"}"))
+                .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"\"}"))
                 .andExpect(status().is(400));
         // without nationalId
         mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
-                        .contentType("application/json").content("{\"nationalIdRef\": \"01\"}"))
+                .contentType("application/json").content("{\"nationalIdRef\": \"01\"}"))
                 .andExpect(status().is(400));
     }
 }
