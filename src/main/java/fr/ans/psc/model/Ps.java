@@ -2,7 +2,6 @@ package fr.ans.psc.model;
 
 import java.util.ArrayList;
 import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,7 +18,7 @@ import javax.validation.constraints.*;
  */
 @Document(collection = "ps")
 @ApiModel(description = "Professionnel de santé")
-public class Ps {
+public class Ps   {
 
   @Id
   private String _id;
@@ -90,7 +89,7 @@ public class Ps {
   /**
    * Get idType
    * @return idType
-   */
+  */
   @ApiModelProperty(value = "")
   public String getIdType() {
     return idType;
@@ -103,8 +102,8 @@ public class Ps {
   /**
    * Get id
    * @return id
-   */
-  @ApiModelProperty()
+  */
+  @ApiModelProperty(value = "")
   public String getId() {
     return id;
   }
@@ -116,10 +115,10 @@ public class Ps {
   /**
    * Get nationalId
    * @return nationalId
-   */
+  */
   @ApiModelProperty(required = true, value = "")
   @NotNull
-  @Size(min = 1)
+@Size(min = 1)
   public String getNationalId() {
     return nationalId;
   }
@@ -131,7 +130,7 @@ public class Ps {
   /**
    * Get lastName
    * @return lastName
-   */
+  */
   @ApiModelProperty(value = "")
   public String getLastName() {
     return lastName;
@@ -144,7 +143,7 @@ public class Ps {
   /**
    * Get firstName
    * @return firstName
-   */
+  */
   @ApiModelProperty(value = "")
   public String getFirstName() {
     return firstName;
@@ -157,7 +156,7 @@ public class Ps {
   /**
    * Get dateOfBirth
    * @return dateOfBirth
-   */
+  */
   @ApiModelProperty(value = "")
   public String getDateOfBirth() {
     return dateOfBirth;
@@ -170,7 +169,7 @@ public class Ps {
   /**
    * Get birthAddressCode
    * @return birthAddressCode
-   */
+  */
   @ApiModelProperty(value = "")
   public String getBirthAddressCode() {
     return birthAddressCode;
@@ -183,7 +182,7 @@ public class Ps {
   /**
    * Get birthCountryCode
    * @return birthCountryCode
-   */
+  */
   @ApiModelProperty(value = "")
   public String getBirthCountryCode() {
     return birthCountryCode;
@@ -196,7 +195,7 @@ public class Ps {
   /**
    * Get birthAddress
    * @return birthAddress
-   */
+  */
   @ApiModelProperty(value = "")
   public String getBirthAddress() {
     return birthAddress;
@@ -209,7 +208,7 @@ public class Ps {
   /**
    * Get genderCode
    * @return genderCode
-   */
+  */
   @ApiModelProperty(value = "")
   public String getGenderCode() {
     return genderCode;
@@ -222,7 +221,7 @@ public class Ps {
   /**
    * Get phone
    * @return phone
-   */
+  */
   @ApiModelProperty(value = "")
   public String getPhone() {
     return phone;
@@ -235,7 +234,7 @@ public class Ps {
   /**
    * Get email
    * @return email
-   */
+  */
   @ApiModelProperty(value = "")
   public String getEmail() {
     return email;
@@ -248,7 +247,7 @@ public class Ps {
   /**
    * Get salutationCode
    * @return salutationCode
-   */
+  */
   @ApiModelProperty(value = "")
   public String getSalutationCode() {
     return salutationCode;
@@ -261,7 +260,7 @@ public class Ps {
   /**
    * Get professions
    * @return professions
-   */
+  */
   @ApiModelProperty(value = "")
   @Valid
   public List<Profession> getProfessions() {
@@ -341,7 +340,7 @@ public class Ps {
 
   @Override
   public int hashCode() {
-    return Objects.hash(idType, id, nationalId, lastName, firstName, dateOfBirth, birthAddressCode, birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions, ids, activated, deactivated);
+    return Objects.hash(idType, id, nationalId, lastName, firstName, dateOfBirth, birthAddressCode, birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions);
   }
 
   @Override
