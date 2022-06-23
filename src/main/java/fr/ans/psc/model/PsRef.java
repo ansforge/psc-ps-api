@@ -41,6 +41,13 @@ public class PsRef   {
     this.activated = activated;
   }
 
+  public PsRef(String nationalIdRef, String nationalId, Long activated, Long deactivated) {
+    this.nationalIdRef = nationalIdRef;
+    this.nationalId = nationalId;
+    this.activated = activated;
+    this.deactivated = deactivated;
+  }
+
   /**
    * Get nationalIdRef
    * @return nationalIdRef
