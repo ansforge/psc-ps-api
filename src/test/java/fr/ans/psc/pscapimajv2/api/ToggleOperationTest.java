@@ -21,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -51,10 +52,10 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     @ExpectedMongoDataSet(value = "/dataset/after_toggle.json")
     public void togglePsRef() throws Exception {
-        Ps ps1 = psRepository.findByPsRefsNationalIdRef("01");
-        Ps ps2 = psRepository.findByPsRefsNationalIdRef("81");
-        assertEquals(ps1.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("01")).findFirst().orElse(null).getNationalId(), "01");
-        assertEquals(ps2.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("81")).findFirst().orElse(null).getNationalId(), "81");
+        Ps ps1 = psRepository.findByIdsContaining("01");
+        Ps ps2 = psRepository.findByIdsContaining("81");
+        assertTrue(ps1.getIds().contains("01"));
+        assertTrue(ps2.getIds().contains("81"));
 
         ResultActions toggleOperation = mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                         .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
@@ -65,8 +66,8 @@ public class ToggleOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 01 is now referencing Ps 81", Level.INFO)).isTrue();
         Ps finalPs = psRepository.findByNationalId("81");
-        assertEquals(finalPs.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("01")).findFirst().orElse(null).getNationalId(), "81");
-        assertEquals(finalPs.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("81")).findFirst().orElse(null).getNationalId(), "81");
+        assertTrue(finalPs.getIds().contains("01"));
+        assertTrue(finalPs.getIds().contains("81"));
     }
 
     @Test

@@ -228,14 +228,11 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("Ps 800000000001 successfully deleted", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000011 successfully deleted", Level.INFO)).isTrue();
 
-        Ps ps = psRepository.findByPsRefsNationalIdRef("800000000001");
-        Ps ps2 = psRepository.findByPsRefsNationalIdRef("800000000011");
+        Ps ps = psRepository.findByIdsContaining("800000000001");
+        Ps ps2 = psRepository.findByIdsContaining("800000000011");
 
-        PsRef psRef1 = ps.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("800000000001")).findFirst().orElse(null);
-        PsRef psRef2 = ps2.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals("800000000011")).findFirst().orElse(null);
-
-        assertThat(ApiUtils.isPsRefActivated(psRef1)).isFalse();
-        assertThat(ApiUtils.isPsRefActivated(psRef2)).isFalse();
+        assertThat(ApiUtils.isPsActivated(ps)).isFalse();
+        assertThat(ApiUtils.isPsActivated(ps2)).isFalse();
 
         deletedPs.andDo(document("PsOperationTest/delete_Ps_by_id"));
     }
@@ -339,8 +336,8 @@ public class PsOperationTest extends BaseOperationTest {
 
         Integer psRefCount = 0;
         for (Ps ps : psRepository.findAll()) {
-            if (ps.getPsRefs() != null)
-                psRefCount += ps.getPsRefs().size();
+            if (ps.getIds() != null)
+                psRefCount += ps.getIds().size();
         }
 
         assertEquals(psRefCount, 2);
@@ -355,7 +352,7 @@ public class PsOperationTest extends BaseOperationTest {
 
         psRefCount = 0;
         for (Ps ps : psRepository.findAll()) {
-            psRefCount += ps.getPsRefs().size();
+            psRefCount += ps.getIds().size();
         }
 
         assertEquals(psRefCount, 1);

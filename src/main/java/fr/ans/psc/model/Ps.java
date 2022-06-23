@@ -1,6 +1,8 @@
 package fr.ans.psc.model;
 
+import java.util.ArrayList;
 import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -17,7 +19,7 @@ import javax.validation.constraints.*;
  */
 @Document(collection = "ps")
 @ApiModel(description = "Professionnel de santé")
-public class Ps   {
+public class Ps {
 
   @Id
   private String _id;
@@ -67,8 +69,15 @@ public class Ps   {
   @Valid
   private List<Profession> professions = null;
 
-  @JsonProperty("psRefs")
-  private List<PsRef> psRefs = null;
+  @JsonProperty("ids")
+  @Indexed(unique = true)
+  private List<String> ids = new ArrayList<>();
+
+  @JsonProperty("activated")
+  private Long activated;
+
+  @JsonProperty("deactivated")
+  private Long deactivated;
 
   public String get_id() {
     return _id;
@@ -81,7 +90,7 @@ public class Ps   {
   /**
    * Get idType
    * @return idType
-  */
+   */
   @ApiModelProperty(value = "")
   public String getIdType() {
     return idType;
@@ -94,8 +103,8 @@ public class Ps   {
   /**
    * Get id
    * @return id
-  */
-  @ApiModelProperty(value = "")
+   */
+  @ApiModelProperty()
   public String getId() {
     return id;
   }
@@ -107,10 +116,10 @@ public class Ps   {
   /**
    * Get nationalId
    * @return nationalId
-  */
+   */
   @ApiModelProperty(required = true, value = "")
   @NotNull
-@Size(min = 1) 
+  @Size(min = 1)
   public String getNationalId() {
     return nationalId;
   }
@@ -122,7 +131,7 @@ public class Ps   {
   /**
    * Get lastName
    * @return lastName
-  */
+   */
   @ApiModelProperty(value = "")
   public String getLastName() {
     return lastName;
@@ -135,7 +144,7 @@ public class Ps   {
   /**
    * Get firstName
    * @return firstName
-  */
+   */
   @ApiModelProperty(value = "")
   public String getFirstName() {
     return firstName;
@@ -148,7 +157,7 @@ public class Ps   {
   /**
    * Get dateOfBirth
    * @return dateOfBirth
-  */
+   */
   @ApiModelProperty(value = "")
   public String getDateOfBirth() {
     return dateOfBirth;
@@ -161,7 +170,7 @@ public class Ps   {
   /**
    * Get birthAddressCode
    * @return birthAddressCode
-  */
+   */
   @ApiModelProperty(value = "")
   public String getBirthAddressCode() {
     return birthAddressCode;
@@ -174,7 +183,7 @@ public class Ps   {
   /**
    * Get birthCountryCode
    * @return birthCountryCode
-  */
+   */
   @ApiModelProperty(value = "")
   public String getBirthCountryCode() {
     return birthCountryCode;
@@ -187,7 +196,7 @@ public class Ps   {
   /**
    * Get birthAddress
    * @return birthAddress
-  */
+   */
   @ApiModelProperty(value = "")
   public String getBirthAddress() {
     return birthAddress;
@@ -200,7 +209,7 @@ public class Ps   {
   /**
    * Get genderCode
    * @return genderCode
-  */
+   */
   @ApiModelProperty(value = "")
   public String getGenderCode() {
     return genderCode;
@@ -213,7 +222,7 @@ public class Ps   {
   /**
    * Get phone
    * @return phone
-  */
+   */
   @ApiModelProperty(value = "")
   public String getPhone() {
     return phone;
@@ -226,7 +235,7 @@ public class Ps   {
   /**
    * Get email
    * @return email
-  */
+   */
   @ApiModelProperty(value = "")
   public String getEmail() {
     return email;
@@ -239,7 +248,7 @@ public class Ps   {
   /**
    * Get salutationCode
    * @return salutationCode
-  */
+   */
   @ApiModelProperty(value = "")
   public String getSalutationCode() {
     return salutationCode;
@@ -252,7 +261,7 @@ public class Ps   {
   /**
    * Get professions
    * @return professions
-  */
+   */
   @ApiModelProperty(value = "")
   @Valid
   public List<Profession> getProfessions() {
@@ -264,17 +273,42 @@ public class Ps   {
   }
 
   /**
-   * Get professions
-   * @return psRefs
+   * Get ids
+   * @return ids
    */
   @ApiModelProperty(value = "")
-  @Valid
-  public List<PsRef> getPsRefs() {
-    return psRefs;
+  public List<String> getIds() {
+    return ids;
   }
 
-  public void setPsRefs(List<PsRef> psRefs) {
-    this.psRefs = psRefs;
+  public void setIds(List<String> ids) {
+    this.ids = ids;
+  }
+
+  /**
+   * Get activated
+   * @return activated
+   */
+  @ApiModelProperty(value = "")
+  public Long getActivated() {
+    return activated;
+  }
+
+  public void setActivated(Long activated) {
+    this.activated = activated;
+  }
+
+  /**
+   * Get deactivated
+   * @return deactivated
+   */
+  @ApiModelProperty(value = "")
+  public Long getDeactivated() {
+    return deactivated;
+  }
+
+  public void setDeactivated(Long deactivated) {
+    this.deactivated = deactivated;
   }
 
   @Override
@@ -299,19 +333,22 @@ public class Ps   {
         Objects.equals(this.phone, ps.phone) &&
         Objects.equals(this.email, ps.email) &&
         Objects.equals(this.salutationCode, ps.salutationCode) &&
-        Objects.equals(this.professions, ps.professions);
+        Objects.equals(this.professions, ps.professions) &&
+        Objects.equals(this.ids, ps.ids) &&
+        Objects.equals(this.activated, ps.activated) &&
+        Objects.equals(this.deactivated, ps.deactivated);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(idType, id, nationalId, lastName, firstName, dateOfBirth, birthAddressCode, birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions);
+    return Objects.hash(idType, id, nationalId, lastName, firstName, dateOfBirth, birthAddressCode, birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions, ids, activated, deactivated);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Ps {\n");
-    
+
     sb.append("    idType: ").append(toIndentedString(idType)).append("\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
@@ -326,6 +363,9 @@ public class Ps   {
     sb.append("    email: ").append(toIndentedString(email)).append("\n");
     sb.append("    salutationCode: ").append(toIndentedString(salutationCode)).append("\n");
     sb.append("    professions: ").append(toIndentedString(professions)).append("\n");
+    sb.append("    ids: ").append(toIndentedString(ids)).append("\n");
+    sb.append("    activated: ").append(toIndentedString(activated)).append("\n");
+    sb.append("    deactivated: ").append(toIndentedString(deactivated)).append("\n");
     sb.append("}");
     return sb.toString();
   }

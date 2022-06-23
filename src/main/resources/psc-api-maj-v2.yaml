@@ -175,6 +175,11 @@ paths:
                               email: structure@one.fr
                               departmentCode: '99'
                               oldStructureId: '101'
+                      activated: 100
+                      deactivated: null
+                      ids:
+                        - '81'
+                        - '01'
         required: true
       tags:
         - ps
@@ -632,10 +637,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Profession'
-        psRefs:
+        ids:
           type: array
           items:
-            $ref: '#/components/schemas/PsRef'
+            type: string
+        activated:
+          type: number
+        deactivated:
+          type: number
+          nullable: true
       required:
         - nationalId
       x-examples:
@@ -695,11 +705,8 @@ components:
                       email: structure@one.fr
                       departmentCode: '99'
                       oldStructureId: '101'
-          psRefs:
-            - nationalIdRef: '800000000002'
-              nationalId: '800000000002'
-              activated: 1638791221
-              deactivated: null
+          ids:
+            - '800000000002'
     Error:
       title: Error
       type: object

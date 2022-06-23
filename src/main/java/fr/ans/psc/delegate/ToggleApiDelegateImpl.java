@@ -15,56 +15,52 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 public class ToggleApiDelegateImpl implements ToggleApiDelegate {
-    private final PsRepository psRepository;
-    private final MongoTemplate mongoTemplate;
+  private final PsRepository psRepository;
+  private final MongoTemplate mongoTemplate;
 
-    public ToggleApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate) {
-        this.psRepository = psRepository;
-        this.mongoTemplate = mongoTemplate;
-    }
+  public ToggleApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate) {
+    this.psRepository = psRepository;
+    this.mongoTemplate = mongoTemplate;
+  }
 
-    @Override
-    @Transactional
-    public ResponseEntity<String> togglePsref(PsRef psRef) {
+  @Override
+  @Transactional
+  public ResponseEntity<String> togglePsref(PsRef psRef) {
+    String nationalIdRef = psRef.getNationalIdRef();
+    String nationalId = psRef.getNationalId();
 
-        Ps oldPs = psRepository.findByPsRefsNationalIdRef(psRef.getNationalIdRef());
-        Ps targetPs = psRepository.findByNationalId(psRef.getNationalId());
+    Ps oldPs = psRepository.findByIdsContaining(nationalIdRef);
+    Ps targetPs = psRepository.findByIdsContaining(nationalId);
 
-        // STEP 1: check if target Ps exists
-        if (targetPs != null) {
+    // STEP 1: check if target Ps exists
+    if (targetPs != null) {
 
-            // STEP 2: check if psref is already toggled
-            if (targetPs.getPsRefs().stream().anyMatch(psRefToCheck -> psRefToCheck.rawEquals(psRef))) {
-                String result = String.format("PsRef %s already references Ps %s, no need to toggle", psRef.getNationalIdRef(), psRef.getNationalId());
-                log.info(result);
-                return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+      // STEP 2: check if psref is already toggled
+      if (targetPs.getIds().contains(nationalIdRef)) {
+        String result = String.format("PsRef %s already references Ps %s, no need to toggle", psRef.getNationalIdRef(), psRef.getNationalId());
+        log.info(result);
+        return new ResponseEntity<>(result, HttpStatus.CONFLICT);
 
-            } else {
-
-                // STEP 3: remove deprecated ps
-                if (oldPs != null) {
-                    mongoTemplate.remove(oldPs);
-                    log.info("Ps {} successfully removed", oldPs.getNationalId());
-
-                    // STEP 4: Add the psref to the target ps
-                    PsRef oldPsRef = oldPs.getPsRefs().stream().filter(ref -> ref.getNationalIdRef().equals(psRef.getNationalIdRef())).findFirst().orElse(null);
-                    if (oldPsRef == null) {
-                        targetPs.getPsRefs().add(new PsRef(psRef.getNationalIdRef(), psRef.getNationalId(), ApiUtils.getInstantTimestamp()));
-                    } else {
-                        oldPsRef.setNationalId(psRef.getNationalId());
-                        targetPs.getPsRefs().add(oldPsRef);
-                    }
-                }
-            }
-            mongoTemplate.save(targetPs);
-            String result = String.format("PsRef %s is now referencing Ps %s", psRef.getNationalIdRef(), targetPs.getNationalId());
-            log.info(result);
-
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        } else {
-            String result = String.format("Could not toggle PsRef %s on Ps %s because this Ps does not exist", psRef.getNationalIdRef(), psRef.getNationalId());
-            log.error(result);
-            return new ResponseEntity<>(result, HttpStatus.GONE);
+      } else {
+        // STEP 3: remove deprecated ps
+        if (oldPs != null) {
+          mongoTemplate.remove(oldPs);
+          log.info("Ps {} successfully removed", oldPs.getNationalId());
         }
+      }
+
+      // STEP 4: Add the psref to the target ps
+      targetPs.getIds().add(psRef.getNationalIdRef());
+      mongoTemplate.save(targetPs);
+
+      String result = String.format("PsRef %s is now referencing Ps %s", psRef.getNationalIdRef(), targetPs.getNationalId());
+      log.info(result);
+
+      return new ResponseEntity<>(result, HttpStatus.OK);
+    } else {
+      String result = String.format("Could not toggle PsRef %s on Ps %s because this Ps does not exist", psRef.getNationalIdRef(), psRef.getNationalId());
+      log.error(result);
+      return new ResponseEntity<>(result, HttpStatus.GONE);
     }
+  }
 }

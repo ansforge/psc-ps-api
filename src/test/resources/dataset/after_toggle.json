@@ -2,17 +2,10 @@
   "fr.ans.psc.model.Ps": [
     {
       "nationalId": "81",
-      "psRefs": [
-        {
-          "nationalIdRef": "81",
-          "nationalId": "81",
-          "activated": 1638791221
-        },
-        {
-          "nationalIdRef": "01",
-          "nationalId": "81",
-          "activated": 1638791221
-        }
+      "activated": 1638791221,
+      "ids": [
+        "81",
+        "01"
       ]
     }
   ]

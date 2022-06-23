@@ -7,6 +7,6 @@ public interface PsRepository extends MongoRepository<Ps, String> {
 
     Ps findByNationalId(String nationalId);
 
-    Ps findByPsRefsNationalIdRef(String nationalIdRef);
+    Ps findByIdsContaining(String id);
 
 }
