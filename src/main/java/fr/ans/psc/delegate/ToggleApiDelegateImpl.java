@@ -35,7 +35,7 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
     // STEP 1: check if target Ps exists
     if (targetPs != null) {
 
-      // STEP 2: check if psref is already toggled
+      // STEP 2: check if target ps contains psRef's nationalIdRef in ids
       if (targetPs.getIds().contains(nationalIdRef)) {
         String result = String.format("PsRef %s already references Ps %s, no need to toggle", psRef.getNationalIdRef(), psRef.getNationalId());
         log.info(result);
@@ -49,7 +49,7 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
         }
       }
 
-      // STEP 4: Add the psref to the target ps
+      // STEP 4: Add the psref's nationalIdRef to the target ps ids
       targetPs.getIds().add(psRef.getNationalIdRef());
       mongoTemplate.save(targetPs);
 

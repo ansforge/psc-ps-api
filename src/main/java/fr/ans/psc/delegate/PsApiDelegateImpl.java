@@ -2,7 +2,6 @@ package fr.ans.psc.delegate;
 
 import fr.ans.psc.api.PsApiDelegate;
 import fr.ans.psc.model.Ps;
-import fr.ans.psc.model.PsRef;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -33,7 +30,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         String operationLog;
         Ps ps = psRepository.findByIdsContaining(psId);
-        // check if Ps containing a PsRef with that nationalIdRef exists
+        // check if Ps containing that id exists
         if (ps == null) {
             operationLog = "No Ps found with nationalIdRef {}";
             log.warn(operationLog, psId);
@@ -73,13 +70,16 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
             for (String id : ps.getIds()) {
-                log.info("PsRef {} has been reactivated", id);
+                log.info("Ps {} has been reactivated", id);
             }
         }
         // PREF DOES NOT EXIST, PHYSICAL CREATION
         else {
             log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
-            ps.getIds().add(ps.getNationalId());
+            //if ids doesn't already contain nationalId, add it
+            if(!ps.getIds().contains(ps.getNationalId())) {
+                ps.getIds().add(ps.getNationalId());
+            }
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
         }
@@ -89,7 +89,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
     @Override
     public ResponseEntity<Void> updatePs(Ps ps) {
-        // check if PsRef is activated before trying to update it
+        // check if ps is activated before trying to update it
         Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
         if (storedPs != null) {
             if (!ApiUtils.isPsActivated(storedPs)) {
@@ -98,14 +98,13 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             }
             // set technical id then update
             ps.set_id(storedPs.get_id());
+            mongoTemplate.save(ps);
+            log.info("Ps {} successfully updated", ps.getNationalId());
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
             log.warn("No Ps found with nationalId {}, can not update it", ps.getNationalId());
             return new ResponseEntity<>(HttpStatus.GONE);
         }
-        mongoTemplate.save(ps);
-        log.info("Ps {} successfully updated", ps.getNationalId());
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override

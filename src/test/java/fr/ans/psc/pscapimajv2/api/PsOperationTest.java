@@ -205,7 +205,7 @@ public class PsOperationTest extends BaseOperationTest {
                         "}"))
                 .andExpect(status().is(201));
         assertThat(memoryAppender.contains("Ps 800000000002 successfully stored or updated", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000002 has been reactivated", Level.INFO)).isTrue();
+        assertThat(memoryAppender.contains("Ps 800000000002 has been reactivated", Level.INFO)).isTrue();
     }
 
     @Test
