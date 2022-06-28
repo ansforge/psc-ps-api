@@ -29,7 +29,7 @@ public class Profession   {
   private String lastName;
 
   @JsonProperty("firstName")
-  private FirstName firstName;
+  private String firstName;
 
   @JsonProperty("expertises")
   @Valid
@@ -114,11 +114,11 @@ public class Profession   {
    * @return firstName
   */
   @ApiModelProperty(value = "")
-  public FirstName getFirstName() {
+  public String getFirstName() {
     return firstName;
   }
 
-  public void setFirstName(FirstName firstName) {
+  public void setFirstName(String firstName) {
     this.firstName = firstName;
   }
 

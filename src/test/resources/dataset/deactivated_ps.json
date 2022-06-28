@@ -24,10 +24,7 @@
           "categoryCode": "C",
           "salutationCode": "MME",
           "lastName": "DOE",
-          "firstNames": [{
-            "firstName":"JANE",
-            "order": 1
-          }],
+          "firstName": "JANE",
           "expertises": [
             {
               "expertiseId": "SSM69",

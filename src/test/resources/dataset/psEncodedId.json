@@ -24,10 +24,7 @@
           "categoryCode": "C",
           "salutationCode": "M",
           "lastName": "DUPONT",
-          "firstNames": [{
-            "firstName":"JIMMY",
-            "order": 1
-          }],
+          "firstName": "JIMMY",
           "expertises": [
             {
               "expertiseId": "SSM69",
