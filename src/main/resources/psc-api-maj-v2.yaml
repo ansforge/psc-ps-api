@@ -44,8 +44,9 @@ paths:
                   id: '00000000001'
                   nationalId: '800000000001'
                   lastName: DUPONT
-                  firstName:
-                    -JIMMY
+                  firstNames:
+                    - firstName: 'JIMMY'
+                      order:  1
                   dateOfBirth: 17/12/1973
                   birthAddressCode: '57463'
                   birthCountryCode: '99'
@@ -60,8 +61,9 @@ paths:
                       categoryCode: C
                       salutationCode: M
                       lastName: DUPONT
-                      firstName:
-                        -JIMMY
+                      firstNames:
+                        - firstName: 'JIMMY'
+                          order:  1
                       expertises:
                         - expertiseId: SSM69
                           typeCode: S
@@ -126,8 +128,9 @@ paths:
                   id: '00000000001'
                   nationalId: '800000000001'
                   lastName: DUPONT
-                  firstName:
-                    -JIMMY
+                  firstNames:
+                    - firstName: 'JIMMY'
+                      order:  1
                   dateOfBirth: 17/12/1973
                   birthAddressCode: '57463'
                   birthCountryCode: '99'
@@ -142,8 +145,9 @@ paths:
                       categoryCode: C
                       salutationCode: M
                       lastName: DUPONT
-                      firstName:
-                        -JIMMY
+                      firstNames:
+                        - firstName: 'JIMMY'
+                          order:  1
                       expertises:
                         - expertiseId: SSM69
                           typeCode: S
@@ -213,8 +217,9 @@ paths:
                     id: '00000000001'
                     nationalId: '800000000001'
                     lastName: DUPONT
-                    firstName:
-                      -JIMMY
+                    firstNames:
+                      - firstName: 'JIMMY'
+                        order:  1
                     dateOfBirth: 17/12/1973
                     birthAddressCode: '57463'
                     birthCountryCode: '99'
@@ -229,8 +234,9 @@ paths:
                         categoryCode: C
                         salutationCode: M
                         lastName: DUPONT
-                        firstName:
-                          -JIMMY
+                        firstNames:
+                          - firstName: 'JIMMY'
+                            order:  1
                         expertises:
                           - expertiseId: SSM69
                             typeCode: S
@@ -369,6 +375,18 @@ paths:
         - toggle
 components:
   schemas:
+    FirstName:
+      description: First Name
+      type: object
+      properties:
+        firstName:
+          type: string
+        order:
+          type: number
+      x-examples:
+        FirstNameExample:
+          firstName: 'JIMMY'
+          order: 1
     Expertise:
       description: Expertise
       type: object
@@ -531,10 +549,10 @@ components:
           type: string
         lastName:
           type: string
-        firstName:
+        firstNames:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/FirstName'
         expertises:
           type: array
           items:
@@ -550,8 +568,9 @@ components:
           categoryCode: C
           salutationCode: M
           lastName: DUPONT
-          firstName:
-            -JIMMY
+          firstNames:
+            - firstName: 'JIMMY'
+              order:  1
           expertises:
             - expertiseId: SSM69
               typeCode: S
@@ -624,10 +643,10 @@ components:
           minLength: 1
         lastName:
           type: string
-        firstName:
+        firstNames:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/FirstName'
         dateOfBirth:
           type: string
         birthAddressCode:
@@ -665,8 +684,9 @@ components:
           id: '00000000001'
           nationalId: '800000000001'
           lastName: DUPONT
-          firstName:
-            -JIMMY
+          firstNames:
+            - firstName: 'JIMMY'
+              order:  1
           dateOfBirth: 17/12/1973
           birthAddressCode: '57463'
           birthCountryCode: '99'
@@ -681,8 +701,9 @@ components:
               categoryCode: C
               salutationCode: M
               lastName: DUPONT
-              firstName:
-                -JIMMY
+              firstNames:
+                - firstName: 'JIMMY'
+                  order:  1
               expertises:
                 - expertiseId: SSM69
                   typeCode: S

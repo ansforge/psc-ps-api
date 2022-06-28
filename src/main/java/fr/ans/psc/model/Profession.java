@@ -28,8 +28,8 @@ public class Profession   {
   @JsonProperty("lastName")
   private String lastName;
 
-  @JsonProperty("firstName")
-  private List<String> firstName;
+  @JsonProperty("firstNames")
+  private List<FirstName> firstNames;
 
   @JsonProperty("expertises")
   @Valid
@@ -114,12 +114,12 @@ public class Profession   {
    * @return firstName
   */
   @ApiModelProperty(value = "")
-  public List<String> getFirstName() {
-    return firstName;
+  public List<FirstName> getFirstNames() {
+    return firstNames;
   }
 
-  public void setFirstName(List<String> firstName) {
-    this.firstName = firstName;
+  public void setFirstNames(List<FirstName> firstNames) {
+    this.firstNames = firstNames;
   }
 
   /**
@@ -165,14 +165,14 @@ public class Profession   {
         Objects.equals(this.categoryCode, profession.categoryCode) &&
         Objects.equals(this.salutationCode, profession.salutationCode) &&
         Objects.equals(this.lastName, profession.lastName) &&
-        Objects.equals(this.firstName, profession.firstName) &&
+        Objects.equals(this.firstNames, profession.firstNames) &&
         Objects.equals(this.expertises, profession.expertises) &&
         Objects.equals(this.workSituations, profession.workSituations);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(exProId, code, categoryCode, salutationCode, lastName, firstName, expertises, workSituations);
+    return Objects.hash(exProId, code, categoryCode, salutationCode, lastName, firstNames, expertises, workSituations);
   }
 
   @Override
@@ -185,7 +185,7 @@ public class Profession   {
     sb.append("    categoryCode: ").append(toIndentedString(categoryCode)).append("\n");
     sb.append("    salutationCode: ").append(toIndentedString(salutationCode)).append("\n");
     sb.append("    lastName: ").append(toIndentedString(lastName)).append("\n");
-    sb.append("    firstName: ").append(toIndentedString(firstName)).append("\n");
+    sb.append("    firstName: ").append(toIndentedString(firstNames)).append("\n");
     sb.append("    expertises: ").append(toIndentedString(expertises)).append("\n");
     sb.append("    workSituations: ").append(toIndentedString(workSituations)).append("\n");
     sb.append("}");
