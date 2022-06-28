@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 
 @Service
 @Slf4j
@@ -62,10 +64,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             // Then update Ps data
             log.info("Ps {} already exists, will be updated", ps.getNationalId());
             ps.set_id(storedPs.get_id());
-            //if ids doesn't already contain nationalId, add it
-            if(!ps.getIds().contains(ps.getNationalId())) {
-                ps.getIds().add(ps.getNationalId());
-            }
+            //if ids is null or doesn't contain nat id, we take the one from the stored ps
+            setAppropriateIds(ps, storedPs);
             ps.setActivated(timestamp);
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
@@ -73,13 +73,12 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                 log.info("Ps {} has been reactivated", id);
             }
         }
-        // PREF DOES NOT EXIST, PHYSICAL CREATION
+        // PS DOES NOT EXIST, PHYSICAL CREATION
         else {
             log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
-            //if ids doesn't already contain nationalId, add it
-            if(!ps.getIds().contains(ps.getNationalId())) {
-                ps.getIds().add(ps.getNationalId());
-            }
+            //if ids is null or doesn't contain nat id, we put nat id in it
+            setAppropriateIds(ps, null);
+            ps.setActivated(timestamp);
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
         }
@@ -98,6 +97,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             }
             // set technical id then update
             ps.set_id(storedPs.get_id());
+            // if ids is empty or null, use that of storedPs
+            setAppropriateIds(ps, storedPs);
             mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
             return new ResponseEntity<>(HttpStatus.OK);
@@ -141,5 +142,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private void setAppropriateIds(Ps psToCheck, Ps storedPs){
+        if (psToCheck.getIds().isEmpty())
+            psToCheck.setIds(storedPs == null ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId())) : storedPs.getIds());
+        else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) psToCheck.getIds().add(psToCheck.getNationalId());
     }
 }
