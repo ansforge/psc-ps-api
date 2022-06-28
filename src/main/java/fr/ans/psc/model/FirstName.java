@@ -34,4 +34,9 @@ public class FirstName {
     public void setOrder(Integer order) {
         this.order = order;
     }
+
+  @Override
+  public String toString() {
+    return this.firstName;
+  }
 }
