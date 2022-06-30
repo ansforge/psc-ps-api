@@ -145,8 +145,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     private void setAppropriateIds(Ps psToCheck, Ps storedPs){
-        if (psToCheck.getIds().isEmpty())
-            psToCheck.setIds(storedPs == null ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId())) : storedPs.getIds());
+        if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty())
+            psToCheck.setIds(storedPs == null || storedPs.getIds() == null ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId())) : storedPs.getIds());
         else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) psToCheck.getIds().add(psToCheck.getNationalId());
     }
 }
