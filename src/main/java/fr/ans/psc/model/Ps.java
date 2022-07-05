@@ -73,9 +73,11 @@ public class Ps   {
   private List<String> ids = new ArrayList<>();
 
   @JsonProperty("activated")
+  @Indexed
   private Long activated;
 
   @JsonProperty("deactivated")
+  @Indexed
   private Long deactivated;
 
   public String get_id() {
