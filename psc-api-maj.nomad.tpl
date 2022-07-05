@@ -89,7 +89,7 @@ spring.data.mongodb.port={{ range service "psc-mongodb" }}{{ .Port }}{{ end }}
 spring.data.mongodb.database=mongodb
 {{ with secret "psc-ecosystem/mongodb" }}spring.data.mongodb.username={{ .Data.data.root_user }}
 spring.data.mongodb.password={{ .Data.data.root_pass }}{{ end }}
-spring.data.mongodb.auto-index-creation=true
+spring.data.mongodb.auto-index-creation=false
 EOF
         destination = "secrets/application.properties"
         change_mode = "restart"
