@@ -25,7 +25,7 @@ public class Structure {
     private String legalEstablishmentFINESS;
 
     @JsonProperty("structureTechnicalId")
-    @Indexed(unique = true)
+    @Indexed
     @NotNull(message = "structure technical id should not be null")
     private String structureTechnicalId;
 
