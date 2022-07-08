@@ -367,6 +367,49 @@ paths:
         required: true
       tags:
         - toggle
+  /v2/extract-all-ps-for-export:
+    get:
+      summary: extract all Ps for export
+      operationId: extract-all-ps-for-export
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: Conflict
+          content:
+            text/plain:
+              schema:
+                type: string
+        '410':
+          description: Gone
+          content:
+            text/plain:
+              schema:
+                type: string
+      description: Extract Ps for export
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ps'
+      tags:
+        - export
 components:
   schemas:
     FirstName:

@@ -5,6 +5,9 @@ import fr.ans.psc.model.Ps;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -142,6 +145,19 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    public ResponseEntity<Page<Ps>> extractAllPsForExport(int page){
+        int size = 100;
+
+        Pageable paging = PageRequest.of(page, size);
+        Page<Ps> psPage = psRepository.aggregateForExtraction(paging);
+
+        if(!psPage.isEmpty()){
+            return new ResponseEntity<>(psPage, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(psPage, HttpStatus.NO_CONTENT);
+        }
     }
 
     private void setAppropriateIds(Ps psToCheck, Ps storedPs){
