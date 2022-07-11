@@ -156,7 +156,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         if(!psPage.isEmpty()){
             return new ResponseEntity<>(psPage, HttpStatus.OK);
         }else{
-            return new ResponseEntity<>(psPage, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(psPage, HttpStatus.GONE);
         }
     }
 

@@ -367,17 +367,25 @@ paths:
         required: true
       tags:
         - toggle
-  /v2/extract-all-ps-for-export:
+  /v2/get-ps-by-page/{page}:
+    parameters:
+      - schema:
+          type: number
+        name: page
+        in: path
+        required: true
     get:
-      summary: extract all Ps for export
-      operationId: extract-all-ps-for-export
+      summary: get ps by page
+      operationId: get-ps-by-page
       responses:
         '200':
           description: OK
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ps'
         '400':
           description: Bad Request
           content:
@@ -403,11 +411,6 @@ paths:
               schema:
                 type: string
       description: Extract Ps for export
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Ps'
       tags:
         - export
 components:
