@@ -20,32 +20,6 @@ public interface PsRepository extends MongoRepository<Ps, String> {
         "{$unwind: {path: '$professions.expertises', preserveNullAndEmptyArrays: true}}",
         "{$unwind: {path: '$professions.workSituations', preserveNullAndEmptyArrays: true}}",
         "{$unwind: {path: '$professions.workSituations.structure', preserveNullAndEmptyArrays: true}}",
-        "{$project: {"+
-            "_id: 0,"+
-            "idType: '$idType',"+
-            "id: '$id',"+
-            "nationalId: '$nationalId',"+
-            "lastName: '$lastName',"+
-            "firstNames: '$firstNames',"+
-            "dateOfBirth: '$dateOfBirth',"+
-            "birthAddressCode: '$birthAddressCode',"+
-            "birthCountryCode: '$birthCountryCode',"+
-            "birthAddress: '$birthAddress',"+
-            "genderCode: '$genderCode',"+
-            "phone: '$phone',"+
-            "email: '$email',"+
-            "salutationCode: '$salutationCode',"+
-            "professions: '$professions',"+
-            "ids: {" +
-                "$reduce: {" +
-                    "input: '$otherIds', initialValue: '', in: {" +
-                        "$concat: ['$$value',' ','$$this']" +
-                    "}" +
-                "}" +
-            "}," +
-            "activated: '$activated'," +
-            "deactivated: '$deactivated'"+
-        "}}"
     })
     Page<Ps> aggregateForExtraction(Pageable pageable);
 }
