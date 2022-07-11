@@ -367,7 +367,7 @@ paths:
         required: true
       tags:
         - toggle
-  /v2/get-ps-by-page/{page}:
+  /v2/get-ps-list-by-page/{page}:
     parameters:
       - schema:
           type: number
@@ -375,8 +375,8 @@ paths:
         in: path
         required: true
     get:
-      summary: get ps by page
-      operationId: get-ps-by-page
+      summary: get ps list by page
+      operationId: get-ps-list-by-page
       responses:
         '200':
           description: OK

@@ -147,7 +147,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    public ResponseEntity<Page<Ps>> getPsByPage(int page){
+    public ResponseEntity<Page<Ps>> getPsListByPage(int page){
         int size = 100;
 
         Pageable paging = PageRequest.of(page, size);
