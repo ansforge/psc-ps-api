@@ -15,6 +15,36 @@ tags:
     description: toggle
 paths:
   /v2/ps:
+    get:
+      summary: Get All Ps
+      parameters:
+        - in: 'query'
+          name: 'page'
+          schema:
+            type: number
+          required: true
+      tags: [ 'ps' ]
+      responses:
+        '200':
+          description: Ps all found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ps'
+        '404':
+          description: Ps not Found
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Gone
+      operationId: get-all-ps
+      description: Retrieve the information of all the Ps.
     post:
       summary: Create new Ps
       tags:
@@ -367,52 +397,7 @@ paths:
         required: true
       tags:
         - toggle
-  /v2/get-ps-list-by-page/{page}:
-    parameters:
-      - schema:
-          type: number
-        name: page
-        in: path
-        required: true
-    get:
-      summary: get ps list by page
-      operationId: get-ps-list-by-page
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Ps'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Not Found
-          content:
-            text/plain:
-              schema:
-                type: string
-        '409':
-          description: Conflict
-          content:
-            text/plain:
-              schema:
-                type: string
-        '410':
-          description: Gone
-          content:
-            text/plain:
-              schema:
-                type: string
-      description: Extract Ps for export
-      tags:
-        - export
+
 components:
   schemas:
     FirstName:

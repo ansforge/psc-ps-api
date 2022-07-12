@@ -16,7 +16,7 @@ import javax.validation.constraints.*;
  * WorkSituation
  */
 @ApiModel(description = "Situation d'exercice")
-public class WorkSituation {
+public class WorkSituation implements Cloneable{
     @JsonProperty("situId")
     private String situId;
 
@@ -40,6 +40,14 @@ public class WorkSituation {
 
     @JsonProperty("structure")
     private Structure structure;
+
+    public WorkSituation clone() {
+        try {
+            return (WorkSituation) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Get situId

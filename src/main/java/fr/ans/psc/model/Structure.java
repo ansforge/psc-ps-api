@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 import java.util.Objects;
 
 @ApiModel(description = "Structure")
-public class Structure {
+public class Structure implements Cloneable{
 
     @JsonProperty("siteSIRET")
     private String siteSIRET;
@@ -86,7 +86,16 @@ public class Structure {
     @JsonProperty("oldStructureId")
     private String oldStructureId;
 
-    /**
+    @Override
+    public Structure clone() {
+        try {
+            return (Structure) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+  /**
      * Get siteSIRET
      *
      * @return siteSIRET

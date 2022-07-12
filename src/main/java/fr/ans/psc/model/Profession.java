@@ -12,7 +12,7 @@ import javax.validation.Valid;
  * Profession
  */
 @ApiModel(description = "Profession")
-public class Profession   {
+public class Profession implements Cloneable{
   @JsonProperty("exProId")
   private String exProId;
 
@@ -38,6 +38,15 @@ public class Profession   {
   @JsonProperty("workSituations")
   @Valid
   private List<WorkSituation> workSituations = null;
+
+  @Override
+  public Profession clone() {
+    try {
+      return (Profession) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   public Profession exProId(String exProId) {
     this.exProId = exProId;

@@ -1,6 +1,7 @@
 package fr.ans.psc.pscapimajv2.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -15,7 +16,6 @@ import com.jupiter.tools.spring.test.mongo.annotation.ExpectedMongoDataSet;
 import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
 import fr.ans.psc.delegate.PsApiDelegateImpl;
 import fr.ans.psc.model.Ps;
-import fr.ans.psc.model.PsRef;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
@@ -31,6 +31,9 @@ import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 public class PsOperationTest extends BaseOperationTest {
 
@@ -76,6 +79,46 @@ public class PsOperationTest extends BaseOperationTest {
         secondPsRefRequest.andExpect(content().json(psAsJsonString));
         assertThat(memoryAppender.contains("Ps 800000000001 has been found", Level.INFO)).isTrue();
 
+    }
+
+    @Test
+    @DisplayName(value = "should get a list of unwound Ps objects from specified page")
+    @MongoDataSet(value = "/dataset/before_unwind.json", cleanBefore = true, cleanAfter = true)
+    public void getAllActivePsAndUnwind() throws Exception {
+
+        ResultActions psRefRequest = mockMvc.perform(get("/api/v2/ps?page=0")
+                        .header("Accept", "application/json"))
+                .andExpect(status().is(200))
+                .andDo(print());
+
+        String json = psRefRequest.andReturn().getResponse().getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Ps> psList = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, Ps.class));
+        assertEquals(6, psList.size());
+
+        for(Ps ps : psList){
+            System.out.println(ps);
+        }
+
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.1")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.2")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.3")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.1")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.2")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.3")));
     }
 
     @Test

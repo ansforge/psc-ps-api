@@ -18,7 +18,7 @@ import javax.validation.constraints.*;
  */
 @Document(collection = "ps")
 @ApiModel(description = "Professionnel de santé")
-public class Ps   {
+public class Ps implements Cloneable{
 
   @Id
   private String _id;
@@ -79,6 +79,17 @@ public class Ps   {
   @JsonProperty("deactivated")
   @Indexed
   private Long deactivated;
+
+  @Override
+  public Ps clone(){
+    Ps psClone;
+    try{
+      psClone = (Ps) super.clone();
+    }catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
+    return psClone;
+  }
 
   public String get_id() {
     return _id;
@@ -143,16 +154,16 @@ public class Ps   {
   }
 
   /**
-   * Get firstName
-   * @return firstName
+   * Get firstNames
+   * @return firstNames
   */
   @ApiModelProperty(value = "")
-  public List<FirstName> getFirstName() {
+  public List<FirstName> getFirstNames() {
     return firstNames;
   }
 
-  public void setFirstName(List<FirstName> firstName) {
-    this.firstNames = firstName;
+  public void setFirstNames(List<FirstName> firstNames) {
+    this.firstNames = firstNames;
   }
 
   /**
