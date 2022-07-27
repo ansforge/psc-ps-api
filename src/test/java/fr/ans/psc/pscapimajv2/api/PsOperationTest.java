@@ -19,7 +19,6 @@ import fr.ans.psc.model.Ps;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,9 +82,9 @@ public class PsOperationTest extends BaseOperationTest {
     }
 
     @Test
-    @DisplayName(value = "should get a list of Ps objects from specified page")
+    @DisplayName(value = "should get a list of unwound Ps objects from specified page")
     @MongoDataSet(value = "/dataset/before_unwind.json", cleanBefore = true, cleanAfter = true)
-    public void getAllActivePs() throws Exception {
+    public void getAllActivePsAndUnwind() throws Exception {
 
         ResultActions psRefRequest = mockMvc.perform(get("/api/v2/ps?page=0")
                         .header("Accept", "application/json"))
@@ -96,7 +95,7 @@ public class PsOperationTest extends BaseOperationTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
         List<Ps> psList = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, Ps.class));
-        assertEquals(3, psList.size());
+        assertEquals(6, psList.size());
 
         for(Ps ps : psList){
             System.out.println(ps);
@@ -107,19 +106,19 @@ public class PsOperationTest extends BaseOperationTest {
             && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.1")));
         assertTrue(psList.stream().anyMatch(
             ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
-            && ps.getProfessions().get(0).getWorkSituations().get(1).getSituId().equals("1.2")));
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.2")));
         assertTrue(psList.stream().anyMatch(
             ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
-            && ps.getProfessions().get(0).getWorkSituations().get(2).getSituId().equals("1.3")));
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.3")));
         assertTrue(psList.stream().anyMatch(
-            ps -> ps.getProfessions().get(0).getExpertises().get(1).getExpertiseId().equals("1.2")
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.2")
             && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.1")));
         assertTrue(psList.stream().anyMatch(
-            ps -> ps.getProfessions().get(0).getExpertises().get(1).getExpertiseId().equals("1.2")
-            && ps.getProfessions().get(0).getWorkSituations().get(1).getSituId().equals("1.2")));
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.2")));
         assertTrue(psList.stream().anyMatch(
-            ps -> ps.getProfessions().get(0).getExpertises().get(1).getExpertiseId().equals("1.2")
-            && ps.getProfessions().get(0).getWorkSituations().get(2).getSituId().equals("1.3")));
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.3")));
     }
 
     @Test

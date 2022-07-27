@@ -1,7 +1,10 @@
 package fr.ans.psc.delegate;
 
 import fr.ans.psc.api.PsApiDelegate;
+import fr.ans.psc.model.Expertise;
+import fr.ans.psc.model.Profession;
 import fr.ans.psc.model.Ps;
+import fr.ans.psc.model.WorkSituation;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -153,39 +156,40 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page){
+    public ResponseEntity<List<Ps>> getAllPs(BigDecimal page){
         Pageable paging = PageRequest.of(page.intValue(), PAGE_SIZE);
 
         Page<Ps> psPage = psRepository.findAll(paging);
         if(psPage != null && !psPage.isEmpty()) {
             ArrayList<Ps> psList = new ArrayList<>(psPage.getContent());
+            psList = unwind(psList);
             return new ResponseEntity<>(psList, HttpStatus.OK);
         }else{
             return new ResponseEntity<>(null, HttpStatus.GONE);
         }
     }
 
-//    private ArrayList<Ps> unwind(ArrayList<Ps> psList){
-//        ArrayList<Ps> unwoundPsList = new ArrayList<>();
-//        Ps tempPs;
-//        Profession tempProfession;
-//        for(Ps ps : psList){
-//            if (ps.getDeactivated()==null || ps.getActivated() > ps.getDeactivated()) {
-//                for (Profession profession : ps.getProfessions()) {
-//                    for (Expertise expertise : profession.getExpertises()) {
-//                        for (WorkSituation workSituation : profession.getWorkSituations()) {
-//                            tempPs = ps.clone();
-//                            tempPs.setProfessions(Arrays.asList(profession.clone()));
-//                            tempPs.getProfessions().get(0).setExpertises(Arrays.asList(expertise.clone()));
-//                            tempPs.getProfessions().get(0).setWorkSituations(Arrays.asList(workSituation.clone()));
-//                            unwoundPsList.add(tempPs);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return unwoundPsList;
-//    }
+    private ArrayList<Ps> unwind(ArrayList<Ps> psList){
+        ArrayList<Ps> unwoundPsList = new ArrayList<>();
+        Ps tempPs;
+        Profession tempProfession;
+        for(Ps ps : psList){
+            if (ps.getDeactivated()==null || ps.getActivated() > ps.getDeactivated()) {
+                for (Profession profession : ps.getProfessions()) {
+                    for (Expertise expertise : profession.getExpertises()) {
+                        for (WorkSituation workSituation : profession.getWorkSituations()) {
+                            tempPs = ps.clone();
+                            tempPs.setProfessions(Arrays.asList(profession.clone()));
+                            tempPs.getProfessions().get(0).setExpertises(Arrays.asList(expertise.clone()));
+                            tempPs.getProfessions().get(0).setWorkSituations(Arrays.asList(workSituation.clone()));
+                            unwoundPsList.add(tempPs);
+                        }
+                    }
+                }
+            }
+        }
+        return unwoundPsList;
+    }
 
     private void setAppropriateIds(Ps psToCheck, Ps storedPs){
         if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty())

@@ -16,7 +16,7 @@ tags:
 paths:
   /v2/ps:
     get:
-      summary: Get a list of Ps by page
+      summary: Get All Ps
       parameters:
         - in: 'query'
           name: 'page'
@@ -26,7 +26,7 @@ paths:
       tags: [ 'ps' ]
       responses:
         '200':
-          description: Ps page found
+          description: Ps all found
           content:
             application/json:
               schema:
@@ -34,7 +34,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Ps'
         '404':
-          description: Ps page not Found
+          description: Ps not Found
         '400':
           description: Bad Request
           content:
@@ -43,8 +43,8 @@ paths:
                 $ref: '#/components/schemas/Error'
         '410':
           description: Gone
-      operationId: get-ps-by-page
-      description: Retrieve the information of all the Ps on the specified page.
+      operationId: get-all-ps
+      description: Retrieve the information of all the Ps.
     post:
       summary: Create new Ps
       tags:
