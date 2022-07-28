@@ -153,8 +153,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page){
-        Pageable paging = PageRequest.of(page.intValue(), PAGE_SIZE);
+    public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page, BigDecimal size){
+        Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
 
         Page<Ps> psPage = psRepository.findAll(paging);
         if(psPage != null && !psPage.isEmpty()) {
