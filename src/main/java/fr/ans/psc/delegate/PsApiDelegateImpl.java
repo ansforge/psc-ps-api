@@ -165,28 +165,6 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         }
     }
 
-//    private ArrayList<Ps> unwind(ArrayList<Ps> psList){
-//        ArrayList<Ps> unwoundPsList = new ArrayList<>();
-//        Ps tempPs;
-//        Profession tempProfession;
-//        for(Ps ps : psList){
-//            if (ps.getDeactivated()==null || ps.getActivated() > ps.getDeactivated()) {
-//                for (Profession profession : ps.getProfessions()) {
-//                    for (Expertise expertise : profession.getExpertises()) {
-//                        for (WorkSituation workSituation : profession.getWorkSituations()) {
-//                            tempPs = ps.clone();
-//                            tempPs.setProfessions(Arrays.asList(profession.clone()));
-//                            tempPs.getProfessions().get(0).setExpertises(Arrays.asList(expertise.clone()));
-//                            tempPs.getProfessions().get(0).setWorkSituations(Arrays.asList(workSituation.clone()));
-//                            unwoundPsList.add(tempPs);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return unwoundPsList;
-//    }
-
     private void setAppropriateIds(Ps psToCheck, Ps storedPs){
         if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty())
             psToCheck.setIds(storedPs == null || storedPs.getIds() == null ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId())) : storedPs.getIds());
