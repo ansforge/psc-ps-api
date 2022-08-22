@@ -74,7 +74,7 @@ job "psc-api-maj-v2" {
         destination = "local/file.env"
         env = true
         data = <<EOH
-JAVA_TOOL_OPTIONS="-Xms256m -Xmx1g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
+JAVA_TOOL_OPTIONS="-Xms256m -Xmx2g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
 EOH
       }
 
@@ -97,7 +97,7 @@ EOF
 
       resources {
         cpu = 500
-        memory = 1280
+        memory = 2560
       }
 
 

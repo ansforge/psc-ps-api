@@ -1,6 +1,7 @@
 package fr.ans.psc.pscapimajv2.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -15,11 +16,10 @@ import com.jupiter.tools.spring.test.mongo.annotation.ExpectedMongoDataSet;
 import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
 import fr.ans.psc.delegate.PsApiDelegateImpl;
 import fr.ans.psc.model.Ps;
-import fr.ans.psc.model.PsRef;
-import fr.ans.psc.repository.PsRefRepository;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,13 +32,14 @@ import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 public class PsOperationTest extends BaseOperationTest {
 
     @Autowired
     private PsRepository psRepository;
-    @Autowired
-    private PsRefRepository psRefRepository;
 
     @BeforeEach
     public void setUp(WebApplicationContext context, RestDocumentationContextProvider restDocProvider) {
@@ -79,6 +80,46 @@ public class PsOperationTest extends BaseOperationTest {
         secondPsRefRequest.andExpect(content().json(psAsJsonString));
         assertThat(memoryAppender.contains("Ps 800000000001 has been found", Level.INFO)).isTrue();
 
+    }
+
+    @Test
+    @DisplayName(value = "should get a list of Ps objects from specified page")
+    @MongoDataSet(value = "/dataset/before_unwind.json", cleanBefore = true, cleanAfter = true)
+    public void getAllActivePs() throws Exception {
+
+        ResultActions psRefRequest = mockMvc.perform(get("/api/v2/ps?page=0")
+                        .header("Accept", "application/json"))
+                .andExpect(status().is(200))
+                .andDo(print());
+
+        String json = psRefRequest.andReturn().getResponse().getContentAsString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Ps> psList = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, Ps.class));
+        assertEquals(3, psList.size());
+
+        for(Ps ps : psList){
+            System.out.println(ps);
+        }
+
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.1")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
+            && ps.getProfessions().get(0).getWorkSituations().get(1).getSituId().equals("1.2")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(0).getExpertiseId().equals("1.1")
+            && ps.getProfessions().get(0).getWorkSituations().get(2).getSituId().equals("1.3")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(1).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(0).getSituId().equals("1.1")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(1).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(1).getSituId().equals("1.2")));
+        assertTrue(psList.stream().anyMatch(
+            ps -> ps.getProfessions().get(0).getExpertises().get(1).getExpertiseId().equals("1.2")
+            && ps.getProfessions().get(0).getWorkSituations().get(2).getSituId().equals("1.3")));
     }
 
     @Test
@@ -137,7 +178,7 @@ public class PsOperationTest extends BaseOperationTest {
 
         ResultActions createdPs = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000001\"," +
-                        "\"nationalId\":\"800000000001\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY''\",\"dateOfBirth\":\"17/12/1983\"," +
+                        "\"nationalId\":\"800000000001\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\"," +
                         "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
                         "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\"," +
                         "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY\"," +
@@ -150,7 +191,8 @@ public class PsOperationTest extends BaseOperationTest {
                         "\"streetCategoryCode\":\"rue\",\"streetLabel\":\"Zorro\",\"distributionMention\":\"c/o Bernardo\",\"cedexOffice\":\"75117\"," +
                         "\"postalCode\":\"75017\",\"communeCode\":\"75\",\"countryCode\":\"FR\",\"phone\":\"0123456789\",\"phone2\":\"0623456789\"," +
                         "\"fax\":\"0198765432\",\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\"," +
-                        "\"registrationAuthority\":\"CIA\"}}]}]}"))
+                        "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000001\",\"nationalId\": \"800000000001\","+
+                        "\"activated\": 1638791221}]}"))
                 .andExpect(status().is(201));
         assertThat(memoryAppender.contains("Ps 800000000001 successfully stored or updated", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 800000000001 has been reactivated", Level.INFO)).isFalse();
@@ -207,7 +249,7 @@ public class PsOperationTest extends BaseOperationTest {
                         "}"))
                 .andExpect(status().is(201));
         assertThat(memoryAppender.contains("Ps 800000000002 successfully stored or updated", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000002 has been reactivated", Level.INFO)).isTrue();
+        assertThat(memoryAppender.contains("Ps 800000000002 has been reactivated", Level.INFO)).isTrue();
     }
 
     @Test
@@ -230,11 +272,11 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("Ps 800000000001 successfully deleted", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000011 successfully deleted", Level.INFO)).isTrue();
 
-        PsRef psRef1 = psRefRepository.findPsRefByNationalIdRef("800000000001");
-        PsRef psRef2 = psRefRepository.findPsRefByNationalIdRef("800000000011");
+        Ps ps = psRepository.findByIdsContaining("800000000001");
+        Ps ps2 = psRepository.findByIdsContaining("800000000011");
 
-        assertThat(ApiUtils.isPsRefActivated(psRef1)).isFalse();
-        assertThat(ApiUtils.isPsRefActivated(psRef2)).isFalse();
+        assertThat(ApiUtils.isPsActivated(ps)).isFalse();
+        assertThat(ApiUtils.isPsActivated(ps2)).isFalse();
 
         deletedPs.andDo(document("PsOperationTest/delete_Ps_by_id"));
     }
@@ -297,7 +339,7 @@ public class PsOperationTest extends BaseOperationTest {
                         "}"))
                 .andExpect(status().is(410));
 
-        assertThat(memoryAppender.contains("No Ps found with nationalId 800000000002, can not update it", Level.WARN)).isTrue();
+        assertThat(memoryAppender.contains("Ps 800000000002 is deactivated, can not update it", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000002 successfully updated", Level.INFO)).isFalse();
     }
 
@@ -334,11 +376,15 @@ public class PsOperationTest extends BaseOperationTest {
 
         assertThat(memoryAppender.contains("No Ps found with id 800000000001, could not delete it", Level.WARN)).isFalse();
         assertThat(memoryAppender.contains("Ps 800000000001 successfully deleted", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000001 pointing on Ps 800000000001 successfully removed", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000011 pointing on Ps 800000000001 successfully removed", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000002 successfully deleted", Level.INFO)).isFalse();
 
-        assertEquals(psRefRepository.count(), 2);
+        Integer psRefCount = 0;
+        for (Ps ps : psRepository.findAll()) {
+            if (ps.getIds() != null)
+                psRefCount += ps.getIds().size();
+        }
+
+        assertEquals(psRefCount, 2);
         assertEquals(psRepository.count(), 2);
 
         // physical delete of deactivated Ps
@@ -347,9 +393,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .andExpect(status().is(204));
 
         assertThat(memoryAppender.contains("Ps 800000000002 successfully deleted", Level.INFO)).isTrue();
-        assertThat(memoryAppender.contains("PsRef 800000000002 pointing on Ps 800000000002 successfully removed", Level.INFO)).isTrue();
 
-        assertEquals(psRefRepository.count(), 1);
+        psRefCount = 0;
+        for (Ps ps : psRepository.findAll()) {
+            psRefCount += ps.getIds().size();
+        }
+
+        assertEquals(psRefCount, 1);
         assertEquals(psRepository.count(), 1);
     }
 }

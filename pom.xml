@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>fr.ans.psc</groupId>
 	<artifactId>psc-api-maj-v2</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>psc-api-maj-v2</name>
 	<description>API for PS CRUD</description>
 

@@ -6,8 +6,9 @@ import ch.qos.logback.classic.LoggerContext;
 import com.jupiter.tools.spring.test.mongo.annotation.ExpectedMongoDataSet;
 import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
 import fr.ans.psc.delegate.ToggleApiDelegateImpl;
-import fr.ans.psc.repository.PsRefRepository;
+import fr.ans.psc.model.Ps;
 import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
+import fr.ans.psc.repository.PsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ToggleOperationTest extends BaseOperationTest {
 
     @Autowired
-    private PsRefRepository psRefRepository;
+    private PsRepository psRepository;
 
     @BeforeEach
     public void setUp(WebApplicationContext context, RestDocumentationContextProvider restDocProvider) {
@@ -50,8 +52,10 @@ public class ToggleOperationTest extends BaseOperationTest {
     @MongoDataSet(value = "/dataset/before_toggle.json", cleanBefore = true, cleanAfter = true)
     @ExpectedMongoDataSet(value = "/dataset/after_toggle.json")
     public void togglePsRef() throws Exception {
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("01").getNationalId(), "01");
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("81").getNationalId(), "81");
+        Ps ps1 = psRepository.findByIdsContaining("01");
+        Ps ps2 = psRepository.findByIdsContaining("81");
+        assertTrue(ps1.getIds().contains("01"));
+        assertTrue(ps2.getIds().contains("81"));
 
         ResultActions toggleOperation = mockMvc.perform(put("/api/v2/toggle").header("Accept", "application/json")
                 .contentType("application/json").content("{\"nationalIdRef\": \"01\", \"nationalId\": \"81\"}"))
@@ -61,8 +65,9 @@ public class ToggleOperationTest extends BaseOperationTest {
 
         assertThat(memoryAppender.contains("Ps 01 successfully removed", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 01 is now referencing Ps 81", Level.INFO)).isTrue();
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("01").getNationalId(), "81");
-        assertEquals(psRefRepository.findPsRefByNationalIdRef("81").getNationalId(), "81");
+        Ps finalPs = psRepository.findByNationalId("81");
+        assertTrue(finalPs.getIds().contains("01"));
+        assertTrue(finalPs.getIds().contains("81"));
     }
 
     @Test

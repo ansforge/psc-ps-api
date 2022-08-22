@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Expertise
  */
 @ApiModel(description = "Expertise")
-public class Expertise   {
+public class Expertise implements Cloneable {
   @JsonProperty("expertiseId")
   private String expertiseId;
 
@@ -18,6 +18,15 @@ public class Expertise   {
 
   @JsonProperty("code")
   private String code;
+
+  @Override
+  public Expertise clone() {
+    try {
+      return (Expertise) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Get expertiseId
