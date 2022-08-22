@@ -1,5 +1,6 @@
 package fr.ans.psc.model;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -17,7 +18,7 @@ import javax.validation.constraints.*;
  */
 @Document(collection = "ps")
 @ApiModel(description = "Professionnel de santé")
-public class Ps   {
+public class Ps implements Cloneable{
 
   @Id
   private String _id;
@@ -36,8 +37,8 @@ public class Ps   {
   @JsonProperty("lastName")
   private String lastName;
 
-  @JsonProperty("firstName")
-  private String firstName;
+  @JsonProperty("firstNames")
+  private List<FirstName> firstNames;
 
   @JsonProperty("dateOfBirth")
   private String dateOfBirth;
@@ -67,6 +68,28 @@ public class Ps   {
   @Valid
   private List<Profession> professions = null;
 
+  @JsonProperty("ids")
+  @Indexed(unique = true)
+  private List<String> ids = new ArrayList<>();
+
+  @JsonProperty("activated")
+  @Indexed
+  private Long activated;
+
+  @JsonProperty("deactivated")
+  @Indexed
+  private Long deactivated;
+
+  @Override
+  public Ps clone(){
+    Ps psClone;
+    try{
+      psClone = (Ps) super.clone();
+    }catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
+    return psClone;
+  }
 
   public String get_id() {
     return _id;
@@ -108,7 +131,7 @@ public class Ps   {
   */
   @ApiModelProperty(required = true, value = "")
   @NotNull
-@Size(min = 1) 
+@Size(min = 1)
   public String getNationalId() {
     return nationalId;
   }
@@ -131,16 +154,16 @@ public class Ps   {
   }
 
   /**
-   * Get firstName
-   * @return firstName
+   * Get firstNames
+   * @return firstNames
   */
   @ApiModelProperty(value = "")
-  public String getFirstName() {
-    return firstName;
+  public List<FirstName> getFirstNames() {
+    return firstNames;
   }
 
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
+  public void setFirstNames(List<FirstName> firstNames) {
+    this.firstNames = firstNames;
   }
 
   /**
@@ -261,6 +284,44 @@ public class Ps   {
     this.professions = professions;
   }
 
+  /**
+   * Get ids
+   * @return ids
+   */
+  @ApiModelProperty(value = "")
+  public List<String> getIds() {
+    return ids;
+  }
+
+  public void setIds(List<String> ids) {
+    this.ids = ids;
+  }
+
+  /**
+   * Get activated
+   * @return activated
+   */
+  @ApiModelProperty(value = "")
+  public Long getActivated() {
+    return activated;
+  }
+
+  public void setActivated(Long activated) {
+    this.activated = activated;
+  }
+
+  /**
+   * Get deactivated
+   * @return deactivated
+   */
+  @ApiModelProperty(value = "")
+  public Long getDeactivated() {
+    return deactivated;
+  }
+
+  public void setDeactivated(Long deactivated) {
+    this.deactivated = deactivated;
+  }
 
   @Override
   public boolean equals(Object o) {
@@ -275,7 +336,7 @@ public class Ps   {
         Objects.equals(this.id, ps.id) &&
         Objects.equals(this.nationalId, ps.nationalId) &&
         Objects.equals(this.lastName, ps.lastName) &&
-        Objects.equals(this.firstName, ps.firstName) &&
+        Objects.equals(this.firstNames, ps.firstNames) &&
         Objects.equals(this.dateOfBirth, ps.dateOfBirth) &&
         Objects.equals(this.birthAddressCode, ps.birthAddressCode) &&
         Objects.equals(this.birthCountryCode, ps.birthCountryCode) &&
@@ -284,24 +345,27 @@ public class Ps   {
         Objects.equals(this.phone, ps.phone) &&
         Objects.equals(this.email, ps.email) &&
         Objects.equals(this.salutationCode, ps.salutationCode) &&
-        Objects.equals(this.professions, ps.professions);
+        Objects.equals(this.professions, ps.professions) &&
+        Objects.equals(this.ids, ps.ids) &&
+        Objects.equals(this.activated, ps.activated) &&
+        Objects.equals(this.deactivated, ps.deactivated);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(idType, id, nationalId, lastName, firstName, dateOfBirth, birthAddressCode, birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions);
+    return Objects.hash(idType, id, nationalId, lastName, firstNames, dateOfBirth, birthAddressCode, birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Ps {\n");
-    
+
     sb.append("    idType: ").append(toIndentedString(idType)).append("\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
     sb.append("    lastName: ").append(toIndentedString(lastName)).append("\n");
-    sb.append("    firstName: ").append(toIndentedString(firstName)).append("\n");
+    sb.append("    firstNames: ").append(toIndentedString(firstNames)).append("\n");
     sb.append("    dateOfBirth: ").append(toIndentedString(dateOfBirth)).append("\n");
     sb.append("    birthAddressCode: ").append(toIndentedString(birthAddressCode)).append("\n");
     sb.append("    birthCountryCode: ").append(toIndentedString(birthCountryCode)).append("\n");
@@ -311,6 +375,9 @@ public class Ps   {
     sb.append("    email: ").append(toIndentedString(email)).append("\n");
     sb.append("    salutationCode: ").append(toIndentedString(salutationCode)).append("\n");
     sb.append("    professions: ").append(toIndentedString(professions)).append("\n");
+    sb.append("    ids: ").append(toIndentedString(ids)).append("\n");
+    sb.append("    activated: ").append(toIndentedString(activated)).append("\n");
+    sb.append("    deactivated: ").append(toIndentedString(deactivated)).append("\n");
     sb.append("}");
     return sb.toString();
   }

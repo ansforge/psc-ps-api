@@ -5,7 +5,10 @@
       "id": "0000000000/1",
       "nationalId": "80000000000/1",
       "lastName": "DUPONT",
-      "firstName": "JIMMY''",
+      "firstNames": [{
+        "firstName":"JIMMY",
+        "order": 1
+      }],
       "dateOfBirth": "17/12/1983",
       "birthAddressCode": "57463",
       "birthCountryCode": "99000",
@@ -66,14 +69,11 @@
             }
           ]
         }
+      ],
+      "activated": 1638791221,
+      "ids": [
+         "80000000000/1"
       ]
-    }
-  ],
-  "fr.ans.psc.model.PsRef": [
-    {
-      "nationalIdRef": "80000000000/1",
-      "nationalId": "80000000000/1",
-      "activated": 1638791221
     }
   ]
 }

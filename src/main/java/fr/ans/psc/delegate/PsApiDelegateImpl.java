@@ -2,96 +2,93 @@ package fr.ans.psc.delegate;
 
 import fr.ans.psc.api.PsApiDelegate;
 import fr.ans.psc.model.Ps;
-import fr.ans.psc.model.PsRef;
-import fr.ans.psc.repository.PsRefRepository;
 import fr.ans.psc.repository.PsRepository;
 import fr.ans.psc.utils.ApiUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @Slf4j
 public class PsApiDelegateImpl implements PsApiDelegate {
 
+
+    public static final Integer PAGE_SIZE = 1000;
     private final PsRepository psRepository;
-    private final PsRefRepository psRefRepository;
     private final MongoTemplate mongoTemplate;
 
-    public PsApiDelegateImpl(PsRepository psRepository, PsRefRepository psRefRepository, MongoTemplate mongoTemplate) {
+    public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate) {
         this.psRepository = psRepository;
-        this.psRefRepository = psRefRepository;
         this.mongoTemplate = mongoTemplate;
     }
 
     @Override
     public ResponseEntity<Ps> getPsById(String encodedPsId) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
-        PsRef psRef = psRefRepository.findPsRefByNationalIdRef(psId);
-
-        // check if PsRef exists and is activated
-        if (!ApiUtils.isPsRefActivated(psRef)) {
-            String operationLog = psRef == null ? "No Ps found with nationalIdRef {}" : "Ps {} is deactivated";
+        String operationLog;
+        Ps ps = psRepository.findByIdsContaining(psId);
+        // check if Ps containing that id exists
+        if (ps == null) {
+            operationLog = "No Ps found with nationalIdRef {}";
             log.warn(operationLog, psId);
             return new ResponseEntity<>(HttpStatus.GONE);
         }
+        // check if Ps is activated
+        if (!ApiUtils.isPsActivated(ps)) {
+            operationLog = "Ps {} is deactivated";
+            log.warn(operationLog, psId);
+            return new ResponseEntity<>(HttpStatus.GONE);
+        }
+        log.info("Ps {} has been found", ps.getNationalId());
 
-        String nationalId = psRef.getNationalId();
-        Ps ps = psRepository.findByNationalId(nationalId);
-        log.info("Ps {} has been found", nationalId);
         return new ResponseEntity<>(ps, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Void> createNewPs(Ps ps) {
         long timestamp = ApiUtils.getInstantTimestamp();
-        PsRef storedPsRef = psRefRepository.findPsRefByNationalIdRef(ps.getNationalId());
-
-        // DON'T UPDATE IF ALREADY ACTIVATED
-        if (ApiUtils.isPsRefActivated(storedPsRef)) {
-            log.warn("Ps {} already exists and is activated, will not be updated", ps.getNationalId());
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-
-        // PSREF EXIST, UPDATE AND REACTIVATION
-        if (storedPsRef != null) {
-            Ps storedPs = psRepository.findByNationalId(storedPsRef.getNationalId());
-            if (storedPs != null) {
-                // set mongo _id to avoid error if it's an update
-                // Then update Ps data
-                log.info("Ps {} already exists, will be updated", ps.getNationalId());
-                ps.set_id(storedPs.get_id());
-                mongoTemplate.save(ps);
-                log.info("Ps {} successfully stored or updated", ps.getNationalId());
-
-                // REACTIVATE ALL PSREF THAT POINTED TOWARDS UPDATED PS
-                // It's programmatically possible that the updated Ps has a modified nationalId (and still the same mongo _id)
-                // So we reset every PsRef pointer with the nationalId of the updated Ps no matter that it has actually changed or not
-                List<PsRef> psRefList = psRefRepository.findAllByNationalId(storedPs.getNationalId());
-                log.info("psRefList size {}", psRefList.size());
-                psRefList.stream().filter(psRef -> !ApiUtils.isPsRefActivated(psRef)).forEach(psRef -> {
-                    psRef.setActivated(timestamp);
-                    psRef.setNationalId(ps.getNationalId());
-                    mongoTemplate.save(psRef);
-                    log.info("PsRef {} has been reactivated", psRef.getNationalIdRef());
-                });
-
+        Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
+        // PS EXISTS, UPDATE AND REACTIVATION
+        if (storedPs != null) {
+            // DON'T UPDATE IF ALREADY ACTIVATED
+            if (ApiUtils.isPsActivated(storedPs)) {
+                log.warn("Ps {} already exists and is activated, will not be updated", ps.getNationalId());
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
-        }
-        // PREF DOES NOT EXIST, PHYSICAL CREATION
-        else {
-            log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
+            // set mongo _id to avoid error if it's an update
+            // Then update Ps data
+            log.info("Ps {} already exists, will be updated", ps.getNationalId());
+            ps.set_id(storedPs.get_id());
+            //if ids is null or doesn't contain nat id, we take the one from the stored ps
+            setAppropriateIds(ps, storedPs);
+            ps.setActivated(timestamp);
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
-
-            storedPsRef = new PsRef(ps.getNationalId(), ps.getNationalId(), timestamp);
-            mongoTemplate.save(storedPsRef);
+            for (String id : ps.getIds()) {
+                log.info("Ps {} has been reactivated", id);
+            }
+        }
+        // PS DOES NOT EXIST, PHYSICAL CREATION
+        else {
+            log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
+            //if ids is null or doesn't contain nat id, we put nat id in it
+            setAppropriateIds(ps, null);
+            ps.setActivated(timestamp);
+            mongoTemplate.save(ps);
+            log.info("Ps {} successfully stored or updated", ps.getNationalId());
         }
 
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -99,44 +96,41 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
     @Override
     public ResponseEntity<Void> updatePs(Ps ps) {
-        // check if PsRef is activated before trying to update it
-        PsRef storedPsRef = psRefRepository.findPsRefByNationalIdRef(ps.getNationalId());
-        if (!ApiUtils.isPsRefActivated(storedPsRef)) {
+        // check if ps is activated before trying to update it
+        Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
+        if (storedPs != null) {
+            if (!ApiUtils.isPsActivated(storedPs)) {
+                log.warn("Ps {} is deactivated, can not update it", ps.getNationalId());
+                return new ResponseEntity<>(HttpStatus.GONE);
+            }
+            // set technical id then update
+            ps.set_id(storedPs.get_id());
+            // if ids is empty or null, use that of storedPs
+            setAppropriateIds(ps, storedPs);
+            mongoTemplate.save(ps);
+            log.info("Ps {} successfully updated", ps.getNationalId());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
             log.warn("No Ps found with nationalId {}, can not update it", ps.getNationalId());
             return new ResponseEntity<>(HttpStatus.GONE);
         }
-
-        // set technical id then update
-        Ps storedPs = psRepository.findByNationalId(ps.getNationalId());
-        if (storedPs != null) {
-            ps.set_id(storedPs.get_id());
-        }
-        mongoTemplate.save(ps);
-        log.info("Ps {} successfully updated", ps.getNationalId());
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Void> deletePsById(String encodedPsId) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
-        PsRef storedPsRef = psRefRepository.findPsRefByNationalIdRef(psId);
-        if (storedPsRef == null) {
+        Ps storedPs = psRepository.findByIdsContaining(psId);
+        if (storedPs == null) {
             log.warn("No Ps found with nationalId {}, will not be deleted", psId);
             return new ResponseEntity<>(HttpStatus.GONE);
         }
+        // deactivate the ps
+        storedPs.setDeactivated(ApiUtils.getInstantTimestamp());
+        mongoTemplate.save(storedPs);
 
-        // get all PsRefs that point to this ps
-        List<PsRef> psRefList = psRefRepository.findAllByNationalId(storedPsRef.getNationalId());
-
-        // deactivate each PsRef pointing to this ps
-        long timestamp = ApiUtils.getInstantTimestamp();
-
-        psRefList.forEach(psRef -> {
-            psRef.setDeactivated(timestamp);
-            mongoTemplate.save(psRef);
-            log.info("Ps {} successfully deleted", psRef.getNationalIdRef());
-        });
+        for ( String id : storedPs.getIds() ) {
+            log.info("Ps {} successfully deleted", id);
+        }
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -154,11 +148,26 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         mongoTemplate.remove(ps);
         log.info("Ps {} successfully deleted", psId);
 
-        List<PsRef> psRefList = psRefRepository.findAllByNationalId(psId);
-        psRefList.forEach(psRef -> {
-            mongoTemplate.remove(psRef);
-            log.info("PsRef {} pointing on Ps {} successfully removed", psRef.getNationalIdRef(), psId);
-        });
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page, BigDecimal size){
+        Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
+
+        Page<Ps> psPage = psRepository.findAll(paging);
+        if(psPage != null && !psPage.isEmpty()) {
+            ArrayList<Ps> psList = new ArrayList<>(psPage.getContent());
+            return new ResponseEntity<>(psList, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.GONE);
+        }
+    }
+
+    private void setAppropriateIds(Ps psToCheck, Ps storedPs){
+        if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty())
+            psToCheck.setIds(storedPs == null || storedPs.getIds() == null ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId())) : storedPs.getIds());
+        else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) psToCheck.getIds().add(psToCheck.getNationalId());
     }
 }

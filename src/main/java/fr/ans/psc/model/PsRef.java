@@ -13,12 +13,8 @@ import javax.validation.constraints.*;
 /**
  * Mapping identifier to Ps
  */
-@Document(collection = "psref")
 @ApiModel(description = "Mapping identifier to Ps")
 public class PsRef   {
-
-  @Id
-  private String _id;
 
   @Indexed(unique = true)
   @NotNull(message = "nationalIdRef should not be null")
@@ -45,12 +41,11 @@ public class PsRef   {
     this.activated = activated;
   }
 
-  public String get_id() {
-    return _id;
-  }
-
-  public void set_id(String _id) {
-    this._id = _id;
+  public PsRef(String nationalIdRef, String nationalId, Long activated, Long deactivated) {
+    this.nationalIdRef = nationalIdRef;
+    this.nationalId = nationalId;
+    this.activated = activated;
+    this.deactivated = deactivated;
   }
 
   /**
