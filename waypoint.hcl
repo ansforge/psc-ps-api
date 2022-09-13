@@ -83,5 +83,5 @@ variable "proxy_address" {
 
 variable "dockerfile_path" {
   type = string
-  default = "Dockerfile"
+  default = "Dockerfile.ext"
 }
