@@ -138,7 +138,7 @@ EOF
       }
       template {
         data = <<EOH
-LOGSTASH_HOST = {{ range service "logstash" }}{{ .Address }}:{{ .Port }}{{ end }}
+LOGSTASH_HOST = {{ range service "${nomad_namespace}-logstash" }}{{ .Address }}:{{ .Port }}{{ end }}
 ENVIRONMENT = "${datacenter}"
 EOH
         destination = "local/file.env"
