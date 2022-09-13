@@ -2,6 +2,8 @@ job "psc-api-maj-v2" {
   datacenters = [
     "${datacenter}"]
   type = "service"
+  namespace = "${nomad_namespace}"
+  
   vault {
     policies = [
       "psc-ecosystem"]
@@ -84,10 +86,10 @@ spring.application.name=psc-api-maj
 server.servlet.context-path=/psc-api-maj
 logging.level.org.springframework.data.mongodb.core.MongoTemplate=INFO
 server.error.include-stacktrace=never
-spring.data.mongodb.host={{ range service "psc-mongodb" }}{{ .Address }}{{ end }}
-spring.data.mongodb.port={{ range service "psc-mongodb" }}{{ .Port }}{{ end }}
+spring.data.mongodb.host={{ range service "${nomad_namespace}-psc-mongodb" }}{{ .Address }}{{ end }}
+spring.data.mongodb.port={{ range service "${nomad_namespace}-psc-mongodb" }}{{ .Port }}{{ end }}
 spring.data.mongodb.database=mongodb
-{{ with secret "psc-ecosystem/mongodb" }}spring.data.mongodb.username={{ .Data.data.root_user }}
+{{ with secret "psc-ecosystem/${nomad_namespace}/mongodb" }}spring.data.mongodb.username={{ .Data.data.root_user }}
 spring.data.mongodb.password={{ .Data.data.root_pass }}{{ end }}
 spring.data.mongodb.auto-index-creation=false
 EOF
@@ -102,7 +104,7 @@ EOF
 
 
       service {
-        name = "$\u007BNOMAD_JOB_NAME\u007D"
+        name = "$\u007BNOMAD_NAMESPACE\u007D-$\u007BNOMAD_JOB_NAME\u007D"
         tags = ["urlprefix-/psc-api-maj"]
         port = "http"
         check {
