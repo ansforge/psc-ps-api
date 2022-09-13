@@ -35,7 +35,7 @@ app "prosanteconnect/psc-api-maj-v2" {
         tag = gitrefpretty()
         username = var.registry_username
         password = var.registry_password
-	      local = true
+	local = true
       }
     }
   }
@@ -45,6 +45,7 @@ app "prosanteconnect/psc-api-maj-v2" {
     use "nomad-jobspec" {
       jobspec = templatefile("${path.app}/psc-api-maj.nomad.tpl", {
         datacenter = var.datacenter
+	nomad_namespace = var.nomad_namespace
       })
     }
   }
