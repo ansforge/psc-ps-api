@@ -76,6 +76,7 @@ job "psc-api-maj-v2" {
         destination = "local/file.env"
         env = true
         data = <<EOH
+PUBLIC_HOSTNAME={{ with secret "psc-ecosystem/${nomad_namespace}/admin" }}{{ .Data.data.public_hostname }}{{ end }}
 JAVA_TOOL_OPTIONS="-Xms256m -Xmx2g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
 EOH
       }
@@ -105,7 +106,7 @@ EOF
 
       service {
         name = "$\u007BNOMAD_NAMESPACE\u007D-$\u007BNOMAD_JOB_NAME\u007D"
-        tags = ["urlprefix-/psc-api-maj"]
+        tags = ["urlprefix-$\u007BPUBLIC_HOSTNAME\u007D/psc-api-maj"]
         port = "http"
         check {
           type = "tcp"
