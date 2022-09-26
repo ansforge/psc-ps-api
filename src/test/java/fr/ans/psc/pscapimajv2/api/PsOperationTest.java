@@ -197,6 +197,11 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("Ps 800000000001 successfully stored or updated", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 800000000001 has been reactivated", Level.INFO)).isFalse();
 
+        Ps storedPs = psRepository.findByNationalId("800000000001");
+        String psAsJsonString = objectWriter.writeValueAsString(storedPs);
+        System.out.println("---------------  RESULT  -------------");
+        System.out.println(psAsJsonString);
+
         createdPs.andDo(document("PsOperationTest/create_new_Ps"));
     }
 
@@ -298,6 +303,8 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should update Ps")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void updatePs() throws Exception {
+        Ps storedPs = psRepository.findByNationalId("800000000001");
+
         ResultActions updatedPs = mockMvc.perform(put("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\n" +
                         "\"idType\": \"8\",\n" +
@@ -306,10 +313,21 @@ public class PsOperationTest extends BaseOperationTest {
                         "}"))
                 .andExpect(status().is(200));
 
+        Ps afterUpdatePs = psRepository.findByNationalId("800000000001");
+
+        assertEquals(storedPs.getActivated(), afterUpdatePs.getActivated());
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000001, can not update it", Level.WARN)).isFalse();
         assertThat(memoryAppender.contains("Ps 800000000001 successfully updated", Level.INFO)).isTrue();
 
         updatedPs.andDo(document("PsOperationTest/update_Ps"));
+    }
+
+    @Test
+    @DisplayName(value = "should retrieve all Ps")
+    @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
+    public void getPsByIdsContaining() {
+        Ps storedPs = psRepository.findByIdsContaining("800000000001");
+        System.out.println(storedPs);
     }
 
     @Test

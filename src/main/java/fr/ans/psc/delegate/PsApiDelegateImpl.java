@@ -105,6 +105,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             }
             // set technical id then update
             ps.set_id(storedPs.get_id());
+            ps.setActivated(storedPs.getActivated());
+            ps.setDeactivated(storedPs.getDeactivated());
             // if ids is empty or null, use that of storedPs
             setAppropriateIds(ps, storedPs);
             mongoTemplate.save(ps);
