@@ -32,7 +32,8 @@ app "prosanteconnect/psc-api-maj-v2" {
       use "docker" {
         image = "${var.registry_path}/psc-api-maj"
         tag = gitrefpretty()
-        encoded_auth = filebase64("/secrets/dockerAuth.json")
+        username = var.registry_username
+        password = var.registry_password
       }
     }
   }
