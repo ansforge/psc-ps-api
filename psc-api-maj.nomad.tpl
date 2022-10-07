@@ -93,6 +93,7 @@ spring.data.mongodb.database=mongodb
 {{ with secret "psc-ecosystem/${nomad_namespace}/mongodb" }}spring.data.mongodb.username={{ .Data.data.root_user }}
 spring.data.mongodb.password={{ .Data.data.root_pass }}{{ end }}
 spring.data.mongodb.auto-index-creation=false
+{{ with secret "psc-ecosystem/${nomad_namespace}/admin" }}logging.level.fr.ans.psc={{ .Data.data.log_level }}{{ end }}
 EOF
         destination = "secrets/application.properties"
         change_mode = "restart"

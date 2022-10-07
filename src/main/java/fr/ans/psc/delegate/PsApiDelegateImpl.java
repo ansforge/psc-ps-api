@@ -156,13 +156,16 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
     @Override
     public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page, BigDecimal size){
+        log.debug("get Ps By Page, page {} of size {}", page, size == null ? PAGE_SIZE : size.intValue());
         Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
 
         Page<Ps> psPage = psRepository.findAll(paging);
         if(psPage != null && !psPage.isEmpty()) {
             ArrayList<Ps> psList = new ArrayList<>(psPage.getContent());
+            log.debug("List of Ps successfully retrieved");
             return new ResponseEntity<>(psList, HttpStatus.OK);
         }else{
+            log.debug("No more Ps on this page");
             return new ResponseEntity<>(null, HttpStatus.GONE);
         }
     }
