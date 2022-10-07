@@ -14,8 +14,5 @@
     <root level="info">
         <appender-ref ref="Console" />
     </root>
-    <logger name="fr.ans" level="trace" additivity="false">
-        <appender-ref ref="Console" />
-    </logger>
 
 </configuration>
