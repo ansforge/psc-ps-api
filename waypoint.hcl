@@ -1,4 +1,4 @@
-project = "psc-api-maj-v2"
+project = "${workspace.name}/psc-api-maj-v2"
 
 # Labels can be specified for organizational purposes.
 labels = {
@@ -7,12 +7,13 @@ labels = {
 
 runner {
   enabled = true
+  profile = "secpsc-${workspace.name}"
   data_source "git" {
     url = "https://github.com/prosanteconnect/psc-api-maj-v2.git"
-    ref = var.datacenter
+    ref = "${workspace.name}"
   }
   poll {
-    enabled = true
+    enabled = false
   }
 }
 
@@ -30,9 +31,11 @@ app "prosanteconnect/psc-api-maj-v2" {
     # Uncomment below to use a remote docker registry to push your built images.
     registry {
       use "docker" {
-        image = "${var.registry_path}/psc-api-maj"
+        image = "${var.registry_username}/psc-api-maj"
         tag = gitrefpretty()
-        encoded_auth = filebase64("/secrets/dockerAuth.json")
+        username = var.registry_username
+        password = var.registry_password
+	local = true
       }
     }
   }
@@ -42,6 +45,7 @@ app "prosanteconnect/psc-api-maj-v2" {
     use "nomad-jobspec" {
       jobspec = templatefile("${path.app}/psc-api-maj.nomad.tpl", {
         datacenter = var.datacenter
+	nomad_namespace = var.nomad_namespace
       })
     }
   }
@@ -49,30 +53,36 @@ app "prosanteconnect/psc-api-maj-v2" {
 
 variable "datacenter" {
   type = string
-  default = "dc1"
+  default = ""
+  env = ["NOMAD_DATACENTER"]
+}
+
+variable "nomad_namespace" {
+  type = string
+  default = ""
+  env = ["NOMAD_NAMESPACE"]
 }
 
 variable "registry_username" {
-  type = string
+  type    = string
   default = ""
+  env     = ["REGISTRY_USERNAME"]
+  sensitive = true
 }
 
 variable "registry_password" {
-  type = string
+  type    = string
   default = ""
+  env     = ["REGISTRY_PASSWORD"]
+  sensitive = true
 }
 
 variable "proxy_address" {
   type = string
-  default = "proxy_address"
+  default = ""
 }
 
 variable "dockerfile_path" {
   type = string
-  default = "Dockerfile"
-}
-
-variable "registry_path" {
-  type = string
-  default = "registry.repo.proxy-dev-forge.asip.hst.fluxus.net/prosanteconnect"
+  default = "Dockerfile.ext"
 }
