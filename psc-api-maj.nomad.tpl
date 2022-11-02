@@ -2,6 +2,8 @@ job "psc-api-maj-v2" {
   datacenters = [
     "${datacenter}"]
   type = "service"
+  namespace = "${nomad_namespace}"
+  
   vault {
     policies = [
       "psc-ecosystem"]
@@ -67,6 +69,7 @@ job "psc-api-maj-v2" {
         destination = "local/file.env"
         env = true
         data = <<EOH
+PUBLIC_HOSTNAME={{ with secret "psc-ecosystem/${nomad_namespace}/admin" }}{{ .Data.data.admin_public_hostname }}{{ end }}
 JAVA_TOOL_OPTIONS="-Xms256m -Xmx2g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
 EOH
       }
@@ -77,12 +80,13 @@ spring.application.name=psc-api-maj
 server.servlet.context-path=/psc-api-maj
 logging.level.org.springframework.data.mongodb.core.MongoTemplate=INFO
 server.error.include-stacktrace=never
-spring.data.mongodb.host={{ range service "psc-mongodb" }}{{ .Address }}{{ end }}
-spring.data.mongodb.port={{ range service "psc-mongodb" }}{{ .Port }}{{ end }}
+spring.data.mongodb.host={{ range service "${nomad_namespace}-psc-mongodb" }}{{ .Address }}{{ end }}
+spring.data.mongodb.port={{ range service "${nomad_namespace}-psc-mongodb" }}{{ .Port }}{{ end }}
 spring.data.mongodb.database=mongodb
-{{ with secret "psc-ecosystem/mongodb" }}spring.data.mongodb.username={{ .Data.data.root_user }}
+{{ with secret "psc-ecosystem/${nomad_namespace}/mongodb" }}spring.data.mongodb.username={{ .Data.data.root_user }}
 spring.data.mongodb.password={{ .Data.data.root_pass }}{{ end }}
 spring.data.mongodb.auto-index-creation=false
+{{ with secret "psc-ecosystem/${nomad_namespace}/admin" }}logging.level.fr.ans.psc={{ .Data.data.log_level }}{{ end }}
 EOF
         destination = "secrets/application.properties"
         change_mode = "restart"
@@ -95,8 +99,8 @@ EOF
 
 
       service {
-        name = "$\u007BNOMAD_JOB_NAME\u007D"
-        tags = ["urlprefix-/psc-api-maj"]
+        name = "$\u007BNOMAD_NAMESPACE\u007D-$\u007BNOMAD_JOB_NAME\u007D"
+        tags = ["urlprefix-$\u007BPUBLIC_HOSTNAME\u007D/psc-api-maj"]
         port = "http"
         check {
           type = "tcp"
@@ -129,7 +133,7 @@ EOF
       }
       template {
         data = <<EOH
-LOGSTASH_HOST = {{ range service "logstash" }}{{ .Address }}:{{ .Port }}{{ end }}
+LOGSTASH_HOST = {{ range service "${nomad_namespace}-logstash" }}{{ .Address }}:{{ .Port }}{{ end }}
 ENVIRONMENT = "${datacenter}"
 EOH
         destination = "local/file.env"
