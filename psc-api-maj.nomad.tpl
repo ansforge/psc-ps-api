@@ -153,6 +153,8 @@ EOH
         check {
           type = "tcp"
           port = "monitoring"
+          interval = "30s"
+          timeout = "2s"
         }
       }
     }
