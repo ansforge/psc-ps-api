@@ -140,7 +140,7 @@ EOH
         env = true
       }
       config {
-        image = "prosanteconnect/filebeat:7.14.2"
+        image = "prosanteconnect/filebeat:7.17.0"
       }
     }
   }
