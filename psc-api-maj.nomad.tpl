@@ -28,7 +28,7 @@ job "psc-api-maj-v2" {
       port "http" {
         to = 8080
       }
-      port "monitoring" {
+      port "filebeat" {
         to = 5066
       }
     }
@@ -145,14 +145,14 @@ EOH
       config {
         image = "prosanteconnect/filebeat:7.17.0"
         ports = [
-          "monitoring"]
+          "filebeat"]
       }
         service {
         name = "log-shipper"
-        port = "monitoring"
+        port = "filebeat"
         check {
           type = "tcp"
-          port = "monitoring"
+          port = "filebeat"
           interval = "30s"
           timeout = "2s"
         }
