@@ -28,6 +28,9 @@ job "psc-api-maj-v2" {
       port "http" {
         to = 8080
       }
+      port "monitoring" {
+        to = 5066
+      }
     }
 
     scaling {
@@ -141,6 +144,16 @@ EOH
       }
       config {
         image = "prosanteconnect/filebeat:7.17.0"
+        ports = [
+          "monitoring"]
+      }
+        service {
+        name = "log-shipper"
+        port = "monitoring"
+        check {
+          type = "tcp"
+          port = "monitoring"
+        }
       }
     }
   }
