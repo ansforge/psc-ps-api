@@ -31,6 +31,9 @@ job "psc-api-maj-v2" {
       port "filebeat" {
         to = 5066
       }
+      port "exporter" {
+        to = 8088
+      }
     }
 
     scaling {
@@ -155,6 +158,42 @@ EOH
           port = "filebeat"
           interval = "30s"
           timeout = "2s"
+        }
+      }
+    }
+    task "beats-exporter" {
+      lifecycle {
+        hook = "poststart"
+        sidecar = true
+      }
+      driver = "docker"
+      config {
+        image = "prosanteconnect/beats-exporter"
+        args = [
+          "-m=8088"
+        ]
+        ports = [
+          "exporter"
+        ]
+      }
+      env {
+        ADDRESSES_TO_SCRAPE = "$\u007BNOMAD_ADDR_filebeat\u007D"
+      }
+      resources {
+        cpu    = 100
+        memory = 32
+      }
+
+      service {
+        name = "$\u007BNOMAD_JOB_NAME\u007D"
+        port = "exporter"
+        check {
+          name     = "log-exporter alive"
+          type     = "http"
+          path     = "/metrics"
+          interval = "30s"
+          timeout  = "2s"
+          failures_before_critical = 5
         }
       }
     }
