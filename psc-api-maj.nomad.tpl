@@ -185,7 +185,7 @@ EOH
       }
 
       service {
-        name = "$\u007BNOMAD_JOB_NAME\u007D"
+        name = "$\u007BNOMAD_TASK_NAME\u007D"
         port = "exporter"
         check {
           name     = "log-exporter alive"
