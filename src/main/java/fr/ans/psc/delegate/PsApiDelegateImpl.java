@@ -17,9 +17,9 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -168,6 +168,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             log.debug("No more Ps on this page");
             return new ResponseEntity<>(null, HttpStatus.GONE);
         }
+    }
+
+    public Stream<Ps> streamAllPs() {
+        log.info("start streaming Ps...");
+        return psRepository.streamAllByNationalIdNotIn(new ArrayList<>());
     }
 
     private void setAppropriateIds(Ps psToCheck, Ps storedPs){
