@@ -78,4 +78,38 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
       return new ResponseEntity<>(result, HttpStatus.GONE);
     }
   }
+
+  /**
+   * remove a reference to a secondary id toggled on a Ps
+   * @param psRef  (required) secondary id reference
+   * @return ResponseEntity with query result message and status
+   */
+  @Override
+  @Transactional
+  public ResponseEntity<String> removeTogglePsref(PsRef psRef) {
+    String nationalIdRef = psRef.getNationalIdRef();
+    String nationalId = psRef.getNationalId();
+
+    Ps ps = psRepository.findByIdsContaining(nationalId);
+
+    if (ps == null) {
+      String result = String.format("Could not remove PsRef %s from Ps %s because this Ps does not exist", psRef.getNationalIdRef(), psRef.getNationalId());
+      log.error(result);
+      return new ResponseEntity<>(result, HttpStatus.GONE);
+    }
+
+    if (!ps.getIds().contains(nationalIdRef)) {
+      String result = String.format("Ps %s does not reference PsRef %s", psRef.getNationalId(), psRef.getNationalIdRef());
+      log.error(result);
+      return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+    }
+
+    ps.getIds().remove(nationalIdRef);
+    mongoTemplate.save(ps);
+
+    String result = String.format("Ps %s is no longer referencing PsRef %s", ps.getNationalId(), psRef.getNationalIdRef());
+    log.info(result);
+
+    return new ResponseEntity<>(result, HttpStatus.OK);
+  }
 }
