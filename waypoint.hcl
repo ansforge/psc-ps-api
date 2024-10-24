@@ -9,7 +9,7 @@ runner {
   enabled = true
   profile = "secpsc-${workspace.name}"
   data_source "git" {
-    url = "https://github.com/prosanteconnect/psc-api-maj-v2.git"
+    url = "https://github.com/ansforge/psc-ps-api.git"
     ref = "${workspace.name}"
   }
   poll {
