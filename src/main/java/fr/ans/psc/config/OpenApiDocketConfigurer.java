@@ -21,7 +21,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.Tag;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
@@ -39,7 +38,6 @@ public class OpenApiDocketConfigurer {
                         .license("MIT")
                         .licenseUrl("https://opensource.org/licenses/MIT%22")
                         .build())
-//                        .tags(new Tag("Note", "Endpoints for CRUD operations on notes"))
                         .select().apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
                         .build();
 
