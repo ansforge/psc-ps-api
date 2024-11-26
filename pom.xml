@@ -16,9 +16,7 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -28,7 +26,7 @@
 	</parent>
 	<groupId>fr.ans.psc</groupId>
 	<artifactId>psc-api-maj-v2</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.1.1</version>
 	<name>psc-api-maj-v2</name>
 	<description>API for PS CRUD</description>
 	<inceptionYear>2022-2023</inceptionYear>
@@ -39,7 +37,11 @@
 		<springfox-version>3.0.0</springfox-version>
 		<start-class>fr.ans.psc.PscApiMajApplication</start-class>
 	</properties>
-
+        
+        <scm>
+          <connection>scm:git:${project.basedir}</connection>
+          <tag>2.1.1</tag>
+        </scm>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

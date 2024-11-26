@@ -353,7 +353,7 @@ paths:
       description: completely delete Ps (not only deactivate it)
   /v2/toggle:
     put:
-      summary: toggle PsRef mapping
+      summary: Toggle PsRef mapping
       operationId: toggle-psref
       responses:
         '200':
@@ -387,6 +387,50 @@ paths:
               schema:
                 type: string
       description: Toggle PsRef mapping
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PsRef'
+            examples:
+              ToggleExample:
+                value:
+                  nationalIdRef: '000000000001'
+                  nationalId: '80000000001'
+                  activated: null
+                  deactivated: null
+        required: true
+      tags:
+        - toggle
+    delete:
+      summary: Remove PsRef mapping toggle
+      operationId: remove-toggle-psref
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '410':
+          description: Gone
+          content:
+            text/plain:
+              schema:
+                type: string
+      description: Remove PsRef mapping toggle
       requestBody:
         content:
           application/json:
