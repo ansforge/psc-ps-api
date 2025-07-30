@@ -209,10 +209,39 @@ public class PsOperationTest extends BaseOperationTest {
                         "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000001\",\"nationalId\": \"800000000001\","+
                         "\"activated\": 1638791221}]}"))
                 .andExpect(status().is(201));
+        
+        ResultActions createdPs2 = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
+                .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000002\"," +  "\"origin\":\"tutu\"," + "\"quality\":0," +
+                        "\"nationalId\":\"800000000002\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\"," +
+                        "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
+                        "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\"," +
+                        "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY\"," +
+                        "\"expertises\":[{\"expertiseId\":\"SSM69\",\"typeCode\":\"S\",\"code\":\"SM69\"}],\"workSituations\":[{\"situId\":\"SSA04\"," +
+                        "\"modeCode\":\"S\",\"activitySectorCode\":\"SA04\",\"pharmacistTableSectionCode\":\"AC36\",\"roleCode\":\"12\"," +
+                        "\"registrationAuthority\":\"ARS/ARS/ARS\",\"structure\":{\"siteSIRET\":\"125 137 196 15574\",\"siteSIREN\":\"125 137 196\"," +
+                        "\"siteFINESS\":null,\"legalEstablishmentFINESS\":null,\"structureTechnicalId\":\"1\"," +
+                        "\"legalCommercialName\":\"Structure One\",\"publicCommercialName\":\"Structure One\",\"recipientAdditionalInfo\":\"info +\"," +
+                        "\"geoLocationAdditionalInfo\":\"geoloc info +\",\"streetNumber\":\"1\",\"streetNumberRepetitionIndex\":\"bis\"," +
+                        "\"streetCategoryCode\":\"rue\",\"streetLabel\":\"Zorro\",\"distributionMention\":\"c/o Bernardo\",\"cedexOffice\":\"75117\"," +
+                        "\"postalCode\":\"75017\",\"communeCode\":\"75\",\"countryCode\":\"FR\",\"phone\":\"0123456789\",\"phone2\":\"0623456789\"," +
+                        "\"fax\":\"0198765432\",\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\"," +
+                        "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000002\",\"nationalId\": \"800000000002\","+
+                        "\"activated\": 1638791221}]}"))
+                .andExpect(status().is(201));
+        
         assertThat(memoryAppender.contains("Ps 800000000001 successfully stored or updated", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 800000000001 has been reactivated", Level.INFO)).isFalse();
 
-        Ps storedPs = psRepository.findByNationalId("800000000001");
+        // Take the default value
+        Ps storedPs = psRepository.findByNationalId("800000000001");        
+        assertEquals(2, storedPs.getQuality());
+        assertTrue("PSI".equalsIgnoreCase(storedPs.getOrigin()));
+        
+        // Overrides the default value
+        Ps storedPs2 = psRepository.findByNationalId("800000000002");
+        assertEquals(0, storedPs2.getQuality());
+        assertTrue("tutu".equalsIgnoreCase(storedPs2.getOrigin()));
+        
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
         System.out.println("---------------  RESULT  -------------");
         System.out.println(psAsJsonString);
