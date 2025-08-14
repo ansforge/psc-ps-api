@@ -1,0 +1,130 @@
+{
+  "fr.ans.psc.model.Ps": [
+     {
+    "_id": "01",
+    "idType": "0",
+    "id": "855e8700-e29b-41d4-a716-44665544111",
+    "nationalId": "855e8700-e29b-41d4-a716-44665544111",
+    "lastName": "PIERRE",
+    "firstNames": [
+      {
+        "firstName": "Bernadette",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "04/01/1940",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "",
+    "phone": "",
+    "email": "",
+    "salutationCode": "MME",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "28",
+        "categoryCode": "C",
+        "salutationCode": "",
+        "lastName": "EVRARD",
+        "firstName": "Bernadette",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": ""
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "L",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "855e8700-e29b-41d4-a716-44665544111"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  },
+  {
+    "_id": "02",
+    "idType": "0",
+    "id": "800000000001",
+    "nationalId": "800000000001",
+    "lastName": "PIERRE",
+    "firstNames": [
+      {
+        "firstName": "Bernadette",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "04/01/1963",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "",
+    "phone": "",
+    "email": "",
+    "salutationCode": "MME",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "12",
+        "categoryCode": "AB",
+        "salutationCode": "",
+        "lastName": "BLUBLU",
+        "firstName": "Thomas",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": "54"
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "X",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "VHYBUYTVG",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "800000000001"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  }
+  ]
+}

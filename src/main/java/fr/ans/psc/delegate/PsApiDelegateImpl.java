@@ -15,11 +15,14 @@
  */
 package fr.ans.psc.delegate;
 
-import fr.ans.psc.api.PsApiDelegate;
-import fr.ans.psc.model.Ps;
-import fr.ans.psc.repository.PsRepository;
-import fr.ans.psc.utils.ApiUtils;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,22 +31,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import fr.ans.psc.api.PsApiDelegate;
+import fr.ans.psc.model.Profession;
+import fr.ans.psc.model.Ps;
+import fr.ans.psc.model.PsRef;
+import fr.ans.psc.repository.PsRepository;
+import fr.ans.psc.utils.ApiUtils;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 public class PsApiDelegateImpl implements PsApiDelegate {
 
-
     public static final Integer PAGE_SIZE = 1000;
     private final PsRepository psRepository;
     private final MongoTemplate mongoTemplate;
+
+    @Autowired
+    public ToggleApiDelegateImpl toggleApiDelegateImpl;
 
     public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate) {
         this.psRepository = psRepository;
@@ -76,6 +81,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     public ResponseEntity<Void> createNewPs(Ps ps) {
         long timestamp = ApiUtils.getInstantTimestamp();
         Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
+        // Remove prof
+        ps.setProfessions(new ArrayList<Profession>());
         // PS EXISTS, UPDATE AND REACTIVATION
         if (storedPs != null) {
             // DON'T UPDATE IF ALREADY ACTIVATED
@@ -87,7 +94,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             // Then update Ps data
             log.info("Ps {} already exists, will be updated", ps.getNationalId());
             ps.set_id(storedPs.get_id());
-            //if ids is null or doesn't contain nat id, we take the one from the stored ps
+            // if ids is null or doesn't contain nat id, we take the one from the stored ps
             setAppropriateIds(ps, storedPs);
             ps.setActivated(timestamp);
             mongoTemplate.save(ps);
@@ -99,7 +106,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         // PS DOES NOT EXIST, PHYSICAL CREATION
         else {
             log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
-            //if ids is null or doesn't contain nat id, we put nat id in it
+            // if ids is null or doesn't contain nat id, we put nat id in it
             setAppropriateIds(ps, null);
             ps.setActivated(timestamp);
             mongoTemplate.save(ps);
@@ -109,8 +116,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+
     @Override
-    public ResponseEntity<Void> updatePs(Ps ps) {
+    public ResponseEntity<Void> updatePs(Ps ps, String existingId) {
         // check if ps is activated before trying to update it
         Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
         if (storedPs != null) {
@@ -122,10 +130,17 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             ps.set_id(storedPs.get_id());
             ps.setActivated(storedPs.getActivated());
             ps.setDeactivated(storedPs.getDeactivated());
+            if (ToggleApiDelegateImpl.isValidUUID(ps.getNationalId())) {
+                ps.setProfessions(storedPs.getProfessions());
+            }
             // if ids is empty or null, use that of storedPs
             setAppropriateIds(ps, storedPs);
-            mongoTemplate.save(ps);
+            ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
+            if (existingId != null && !"".equals(existingId) && !ps.getNationalId().equals(existingId)) {
+                PsRef psRef = new PsRef(existingId, ps.getNationalId(), ps.getActivated(), ps.getDeactivated());
+                toggleApiDelegateImpl.togglePsref(psRef);
+            }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             log.warn("No Ps found with nationalId {}, can not update it", ps.getNationalId());
@@ -145,7 +160,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         storedPs.setDeactivated(ApiUtils.getInstantTimestamp());
         mongoTemplate.save(storedPs);
 
-        for ( String id : storedPs.getIds() ) {
+        for (String id : storedPs.getIds()) {
             log.info("Ps {} successfully deleted", id);
         }
 
@@ -165,29 +180,33 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         mongoTemplate.remove(ps);
         log.info("Ps {} successfully deleted", psId);
 
-
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Override
-    public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page, BigDecimal size){
+    public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page, BigDecimal size) {
         log.debug("get Ps By Page, page {} of size {}", page, size == null ? PAGE_SIZE : size.intValue());
         Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
 
         Page<Ps> psPage = psRepository.findAll(paging);
-        if(psPage != null && !psPage.isEmpty()) {
+        if (psPage != null && !psPage.isEmpty()) {
             ArrayList<Ps> psList = new ArrayList<>(psPage.getContent());
             log.debug("List of Ps successfully retrieved");
             return new ResponseEntity<>(psList, HttpStatus.OK);
-        }else{
+        } else {
             log.debug("No more Ps on this page");
             return new ResponseEntity<>(null, HttpStatus.GONE);
         }
     }
 
-    private void setAppropriateIds(Ps psToCheck, Ps storedPs){
-        if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty())
-            psToCheck.setIds(storedPs == null || storedPs.getIds() == null ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId())) : storedPs.getIds());
-        else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) psToCheck.getIds().add(psToCheck.getNationalId());
+    private void setAppropriateIds(Ps psToCheck, Ps storedPs) {
+        if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty()) {
+            psToCheck.setIds(storedPs == null || storedPs.getIds() == null
+                    ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId()))
+                    : storedPs.getIds());
+        } else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) {
+            psToCheck.getIds().add(psToCheck.getNationalId());
+        }
+        // psToCheck.setAlternativeIds(ToggleApiDelegateImpl.idTripletCreationFromIds(psToCheck.getIds()));
     }
 }

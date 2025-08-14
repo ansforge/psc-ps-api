@@ -137,6 +137,13 @@ paths:
     put:
       summary: Update Ps
       operationId: update-ps
+      parameters:
+       - name: extraId
+         in: query
+         description: Optional id
+         required: false
+         schema:
+           type: string
       responses:
         '200':
           description: OK

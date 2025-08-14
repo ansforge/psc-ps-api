@@ -1,0 +1,67 @@
+{
+  "fr.ans.psc.model.Ps": [
+     {
+    "_id": "01",
+    "idType": "0",
+    "id": "855e8700-e29b-41d4-a716-44665544111",
+    "nationalId": "855e8700-e29b-41d4-a716-44665544111",
+    "lastName": "PIERRE",
+    "firstNames": [
+      {
+        "firstName": "Bernadette",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "04/01/1940",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "",
+    "phone": "",
+    "email": "",
+    "salutationCode": "MME",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "28",
+        "categoryCode": "C",
+        "salutationCode": "",
+        "lastName": "EVRARD",
+        "firstName": "Bernadette",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": ""
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "L",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "855e8700-e29b-41d4-a716-44665544111"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  }
+  ]
+}
