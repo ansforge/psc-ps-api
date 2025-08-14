@@ -16,9 +16,13 @@
 package fr.ans.psc.repository;
 
 import fr.ans.psc.model.Ps;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -29,4 +33,13 @@ public interface PsRepository extends MongoRepository<Ps, String> {
     Ps findByIdsContaining(String id);
 
     Page<Ps> findAll(Pageable pageable);
+        
+    @Query("{ 'firstNames.firstName': { $all: ?0 }, "
+    	     + "'lastName': ?1, "
+    	     + "'genderCode': ?2, "
+    	     + "'dateOfBirth': ?3, "
+    	     + "'birthCountryCode': ?4 }")
+	List<Ps> findPsByIdentity(List<String> firstNames,
+			String lastName, String genderCode, String dateOfBirth, String birthCountryCode);
+    
 }

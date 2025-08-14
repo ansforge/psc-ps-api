@@ -453,6 +453,87 @@ paths:
         required: true
       tags:
         - toggle
+  /v2/ps/search:
+    get:
+      tags:
+        - search-ps-controller
+      summary: Retourne l'id national de chaque personne trouvée sur la base des traits d'identité
+      operationId: rechercherNationalIdParTraitsIdentite
+      parameters:
+        - name: lastName
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: firstNames
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: genderCode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: birthdate
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: birthTownCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: birthCountryCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: birthPlace
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Au moins une personne a été trouvé, retourne donc un tableau d'id
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Données invalides ou absentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Utilisateur non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: Conflits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'     
 
 components:
   schemas:

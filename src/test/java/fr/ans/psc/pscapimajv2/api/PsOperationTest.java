@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -378,6 +379,40 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000003, will not be deleted", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000003 successfully deleted", Level.INFO)).isFalse();
     }
+    
+    @Test
+    @DisplayName(value = "should not delete Ps if not exists")
+    @MongoDataSet(value = "/dataset/ps_search_by_identity.json", cleanBefore = true, cleanAfter = true)
+    public void searchPs() throws Exception {
+    	ResultActions result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY")
+                .param("genderCode", "M")
+                .param("birthdate", "17/12/1983")
+                .param("birthTownCode","99000")
+        )
+        .andExpect(status().is(200));
+    	String responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001") && responseBody.contains("800000000002"));
+
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "17/12/1983")
+                .param("birthTownCode","99000")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+    }
+
 
     @Test
     @DisplayName(value = "should update Ps")
