@@ -20,7 +20,10 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.ans.psc.api.PsApiDelegate;
+import fr.ans.psc.model.AlternativeIdentifier;
 import fr.ans.psc.model.Profession;
 import fr.ans.psc.model.Ps;
 import fr.ans.psc.model.PsRef;
@@ -46,13 +50,15 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     public static final Integer PAGE_SIZE = 1000;
     private final PsRepository psRepository;
     private final MongoTemplate mongoTemplate;
+    private final ToggleApiDelegateImpl toggleApiDelegateImpl;
 
-    @Autowired
-    public ToggleApiDelegateImpl toggleApiDelegateImpl;
+//    public ToggleApiDelegateImpl toggleApiDelegateImpl;
 
-    public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate) {
+    public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate,
+            ToggleApiDelegateImpl toggleApiDelegateImpl) {
         this.psRepository = psRepository;
         this.mongoTemplate = mongoTemplate;
+        this.toggleApiDelegateImpl = toggleApiDelegateImpl;
     }
 
     @Override
@@ -95,7 +101,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             log.info("Ps {} already exists, will be updated", ps.getNationalId());
             ps.set_id(storedPs.get_id());
             // if ids is null or doesn't contain nat id, we take the one from the stored ps
-            setAppropriateIds(ps, storedPs);
+            ApiUtils.setAppropriateIds(ps, storedPs);
             ps.setActivated(timestamp);
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
@@ -107,7 +113,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         else {
             log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
             // if ids is null or doesn't contain nat id, we put nat id in it
-            setAppropriateIds(ps, null);
+            ApiUtils.setAppropriateIds(ps, null);
             ps.setActivated(timestamp);
             mongoTemplate.save(ps);
             log.info("Ps {} successfully stored or updated", ps.getNationalId());
@@ -115,7 +121,6 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-
 
     @Override
     public ResponseEntity<Void> updatePs(Ps ps, String existingId) {
@@ -130,11 +135,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             ps.set_id(storedPs.get_id());
             ps.setActivated(storedPs.getActivated());
             ps.setDeactivated(storedPs.getDeactivated());
-            if (ToggleApiDelegateImpl.isValidUUID(ps.getNationalId())) {
+            if (ApiUtils.isValidUUID(ps.getNationalId())) {
                 ps.setProfessions(storedPs.getProfessions());
             }
             // if ids is empty or null, use that of storedPs
-            setAppropriateIds(ps, storedPs);
+            ApiUtils.setAppropriateIds(ps, storedPs);
             ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
             if (existingId != null && !"".equals(existingId) && !ps.getNationalId().equals(existingId)) {
@@ -197,16 +202,5 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             log.debug("No more Ps on this page");
             return new ResponseEntity<>(null, HttpStatus.GONE);
         }
-    }
-
-    private void setAppropriateIds(Ps psToCheck, Ps storedPs) {
-        if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty()) {
-            psToCheck.setIds(storedPs == null || storedPs.getIds() == null
-                    ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId()))
-                    : storedPs.getIds());
-        } else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) {
-            psToCheck.getIds().add(psToCheck.getNationalId());
-        }
-        // psToCheck.setAlternativeIds(ToggleApiDelegateImpl.idTripletCreationFromIds(psToCheck.getIds()));
     }
 }

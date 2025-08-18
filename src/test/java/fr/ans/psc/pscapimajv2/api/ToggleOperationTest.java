@@ -69,7 +69,6 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, PSI_RPPS case")
 	@MongoDataSet(value = "/dataset/toggle_PSI_RPPS.json", cleanBefore = true, cleanAfter = true)
-//	@MongoDataSet(value = "/dataset/toggle_PSI_RPPS2.json", cleanBefore = true, cleanAfter = true)
 	public void PSIandRPPStogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("550e8400-e29b-41d4-a716-446655440000");
@@ -89,6 +88,9 @@ public class ToggleOperationTest extends BaseOperationTest {
 				Level.INFO)).isTrue();
 		Ps finalPs = psRepository.findByNationalId("550e8400-e29b-41d4-a716-446655440000");
 
+        assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "550e8400-e29b-41d4-a716-446655440000".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
+        assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 1 && "81".equals(id.getIdentifier()) && "RPPS".equals(id.getOrigine() )));
+        
 		assertTrue(finalPs.getIds().contains("550e8400-e29b-41d4-a716-446655440000"));
 		assertTrue(finalPs.getIds().contains("81"));
 		assertTrue("AB".equals(finalPs.getProfessions().get(0).getCategoryCode()));
@@ -98,13 +100,13 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, PSI only case")
 	@MongoDataSet(value = "/dataset/toggle_PSI_only.json", cleanBefore = true, cleanAfter = true)
-//	@MongoDataSet(value = "/dataset/toggle_PSI_only2.json", cleanBefore = true, cleanAfter = true)
-	public void PSItogglePsRef() throws Exception {
+	public void psiTogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
 		Ps ps2 = psRepository.findByNationalId("3 110000056/000000001");
 		assertTrue(ps1.getIds().contains("855e8700-e29b-41d4-a716-44665544111"));
 		assertTrue(ps2.getIds().contains("3 110000056/000000001"));
+		
 
 		ResultActions toggleOperation = mockMvc.perform(
 				put("/api/v2/toggle").header("Accept", "application/json").contentType("application/json").content(
@@ -118,6 +120,8 @@ public class ToggleOperationTest extends BaseOperationTest {
 				"PsRef 855e8700-e29b-41d4-a716-44665544111 is now referencing Ps 3 110000056/000000001", Level.INFO))
 				.isTrue();
 		Ps finalPs = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
+        assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "855e8700-e29b-41d4-a716-44665544111".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
+        assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 1 && "3 110000056/000000001".equals(id.getIdentifier()) && "FINESS".equals(id.getOrigine() )));
 
 		assertTrue(finalPs.getIds().contains("855e8700-e29b-41d4-a716-44665544111"));
 		assertTrue(finalPs.getIds().contains("3 110000056/000000001"));
@@ -129,7 +133,7 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, RPPS only case")
 	@MongoDataSet(value = "/dataset/toggle_RPPS_only.json", cleanBefore = true, cleanAfter = true)
-	public void RPPStogglePsRef() throws Exception {
+	public void rppsTogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("4380527788/8165");
 		Ps ps2 = psRepository.findByNationalId("811234567896");
@@ -158,7 +162,7 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, Adeli case")
 	@MongoDataSet(value = "/dataset/toggle_Adeli.json", cleanBefore = true, cleanAfter = true)
-	public void AdelitogglePsRef() throws Exception {
+	public void adeliTogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("000327008728");
 		Ps ps2 = psRepository.findByNationalId("538052778800034/8165");

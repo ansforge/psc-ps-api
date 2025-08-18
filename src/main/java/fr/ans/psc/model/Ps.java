@@ -1,3 +1,4 @@
+
 /**
  * Copyright (C) 2022-2023 Agence du Numérique en Santé (ANS) (https://esante.gouv.fr)
  *
@@ -16,17 +17,21 @@
 package fr.ans.psc.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Professionnel de santé
@@ -87,6 +92,9 @@ public class Ps implements Cloneable {
 	@Indexed(unique = true)
 	private List<String> ids = new ArrayList<>();
 
+	@JsonProperty("alternativeIds")
+	private List<AlternativeIdentifier> alternativeIds = new ArrayList<>();
+
 	@JsonProperty("activated")
 	@Indexed
 	private Long activated;
@@ -94,12 +102,6 @@ public class Ps implements Cloneable {
 	@JsonProperty("deactivated")
 	@Indexed
 	private Long deactivated;
-
-	@JsonProperty("origin")
-	private String origin = "PSI";
-
-	@JsonProperty("quality")
-	private int quality = 2;
 
 	@Override
 	public Ps clone() {
@@ -361,32 +363,18 @@ public class Ps implements Cloneable {
 		this.deactivated = deactivated;
 	}
 
-	/**
-	 * Get origin
+	/***
+	 * Get alternativeIds
 	 * 
-	 * @return origin
+	 * @return
 	 */
 	@ApiModelProperty(value = "")
-	public String getOrigin() {
-		return origin;
+	public List<AlternativeIdentifier> getAlternativeIds() {
+		return alternativeIds;
 	}
 
-	public void setOrigin(String origin) {
-		this.origin = origin;
-	}
-
-	/**
-	 * Get quality
-	 * 
-	 * @return quality
-	 */
-	@ApiModelProperty(value = "")
-	public int getQuality() {
-		return quality;
-	}
-
-	public void setQuality(int quality) {
-		this.quality = quality;
+	public void setAlternativeIds(List<AlternativeIdentifier> alternativeIds) {
+		this.alternativeIds = alternativeIds;
 	}
 
 	@Override
@@ -407,14 +395,13 @@ public class Ps implements Cloneable {
 				&& Objects.equals(this.phone, ps.phone) && Objects.equals(this.email, ps.email)
 				&& Objects.equals(this.salutationCode, ps.salutationCode)
 				&& Objects.equals(this.professions, ps.professions) && Objects.equals(this.ids, ps.ids)
-				&& Objects.equals(this.activated, ps.activated) && Objects.equals(this.deactivated, ps.deactivated)
-				&& Objects.equals(this.origin, ps.origin) && Objects.equals(this.quality, ps.quality);
+				&& Objects.equals(this.activated, ps.activated) && Objects.equals(this.deactivated, ps.deactivated);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(idType, id, nationalId, lastName, firstNames, dateOfBirth, birthAddressCode,
-				birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions, origin, quality);
+				birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions);
 	}
 
 	@Override
@@ -439,8 +426,7 @@ public class Ps implements Cloneable {
 		sb.append("    ids: ").append(toIndentedString(ids)).append("\n");
 		sb.append("    activated: ").append(toIndentedString(activated)).append("\n");
 		sb.append("    deactivated: ").append(toIndentedString(deactivated)).append("\n");
-		sb.append("    origin: ").append(toIndentedString(origin)).append("\n");
-		sb.append("    quality: ").append(toIndentedString(quality)).append("\n");
+		sb.append("    alternativeIds: ").append(toIndentedString(alternativeIds)).append("\n");
 		sb.append("}");
 		return sb.toString();
 	}

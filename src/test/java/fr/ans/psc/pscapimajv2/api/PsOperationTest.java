@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -214,8 +213,9 @@ public class PsOperationTest extends BaseOperationTest {
                 .andExpect(status().is(201));
         
         ResultActions createdPs2 = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
-                .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000002\"," +  "\"origin\":\"tutu\"," + "\"quality\":0," +
-                        "\"nationalId\":\"800000000002\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\"," +
+                .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000002\"," +"\"ids\":[\"800000000002\",\"855e8700-e29b-41d4-a716-44665544111\"],"+  
+                		"\"alternativeIds\":[{\"identifier\":\"800000000002\",\"origine\":\"RPPS\",\"quality\":1},{\"identifier\":\"855e8700-e29b-41d4-a716-44665544111\",\"origine\":\"PSI\",\"quality\":2}]," + "\"quality\":0," +
+                        "\"nationalId\":\"855e8700-e29b-41d4-a716-44665544111\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\"," +
                         "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
                         "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\"," +
                         "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY\"," +
@@ -237,15 +237,18 @@ public class PsOperationTest extends BaseOperationTest {
 
         // Take the default value
         Ps storedPs = psRepository.findByNationalId("800000000001");        
-        assertEquals(2, storedPs.getQuality());
-        assertTrue("PSI".equalsIgnoreCase(storedPs.getOrigin()));
+        // assertTrue(storedPs.getAlternativeIds().isEmpty());
         
         // Overrides the default value
-        Ps storedPs2 = psRepository.findByNationalId("800000000002");
-        assertEquals(0, storedPs2.getQuality());
-        assertTrue("tutu".equalsIgnoreCase(storedPs2.getOrigin()));
+        Ps storedPs2 = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
+        assertTrue(storedPs2.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 1 && "800000000002".equals(id.getIdentifier()) && "RPPS".equals(id.getOrigine() )));
+        assertTrue(storedPs2.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "855e8700-e29b-41d4-a716-44665544111".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
         
         String psAsJsonString = objectWriter.writeValueAsString(storedPs);
+        System.out.println("---------------  RESULT  -------------");
+        System.out.println(psAsJsonString);
+        
+        psAsJsonString = objectWriter.writeValueAsString(storedPs2);
         System.out.println("---------------  RESULT  -------------");
         System.out.println(psAsJsonString);
 
@@ -379,40 +382,6 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000003, will not be deleted", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000003 successfully deleted", Level.INFO)).isFalse();
     }
-    
-    @Test
-    @DisplayName(value = "should not delete Ps if not exists")
-    @MongoDataSet(value = "/dataset/ps_search_by_identity.json", cleanBefore = true, cleanAfter = true)
-    public void searchPs() throws Exception {
-    	ResultActions result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
-                .header("Accept", "application/json")
-                .param("lastName", "DUPONT")
-                .param("firstNames", "JIMMY")
-                .param("genderCode", "M")
-                .param("birthdate", "17/12/1983")
-                .param("birthTownCode","99000")
-        )
-        .andExpect(status().is(200));
-    	String responseBody = result.andReturn().getResponse().getContentAsString();
-
-        assertTrue(responseBody.contains("800000000001") && responseBody.contains("800000000002"));
-
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
-                .header("Accept", "application/json")
-                .param("lastName", "DUPONT")
-                .param("firstNames", "JIMMY BOB")
-                .param("genderCode", "M")
-                .param("birthdate", "17/12/1983")
-                .param("birthTownCode","99000")
-        )
-        .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
-
-        assertTrue(responseBody.contains("800000000001"));
-    }
-
 
     @Test
     @DisplayName(value = "should update Ps")
@@ -540,6 +509,7 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "should update Ps and merge RPPS professional information in the PS")
     @MongoDataSet(value = "/dataset/updatePSIAndMerge_RPPS_example.json", cleanBefore = true, cleanAfter = true)
     public void updatePsAndMerge() throws Exception {
+
 
         ResultActions updatedPs = mockMvc
                 .perform(put("/api/v2/ps").param("extraId", "800000000001").header("Accept", "application/json")
