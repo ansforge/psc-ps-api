@@ -19,13 +19,8 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.ans.psc.api.PsApiDelegate;
-import fr.ans.psc.model.AlternativeIdentifier;
 import fr.ans.psc.model.Profession;
 import fr.ans.psc.model.Ps;
 import fr.ans.psc.model.PsRef;
@@ -51,8 +45,6 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     private final PsRepository psRepository;
     private final MongoTemplate mongoTemplate;
     private final ToggleApiDelegateImpl toggleApiDelegateImpl;
-
-//    public ToggleApiDelegateImpl toggleApiDelegateImpl;
 
     public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate,
             ToggleApiDelegateImpl toggleApiDelegateImpl) {

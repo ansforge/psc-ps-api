@@ -382,6 +382,122 @@ public class PsOperationTest extends BaseOperationTest {
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000003, will not be deleted", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000003 successfully deleted", Level.INFO)).isFalse();
     }
+ 
+    @Test
+    @DisplayName(value = "Search a PS by identity")
+    @MongoDataSet(value = "/dataset/ps_search_by_identity.json", cleanBefore = true, cleanAfter = true)
+    public void searchPs() throws Exception {
+    	
+    	// Only required criterias (and only one firstName)
+    	ResultActions result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+        )
+        .andExpect(status().is(200));
+    	String responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001") && responseBody.contains("800000000002"));
+ 
+        // Only required criterias (and all firstnames)
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // Only required criterias + birthCountryCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // Only required criterias + birthCountryCode + birthAddressCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthAddressCode","57463")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // All criterias (+ optionals birthCountryCode, birthAddressCode, birthAddress)
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthAddressCode","57463")
+                .param("birthAddress","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // All criterias, fake firstname
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB TOTO")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthAddressCode","57463")
+                .param("birthAddress","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertEquals("[]", responseBody);
+        
+        // All criterias, fake birthCountryCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99001")
+                .param("birthAddressCode","57463")
+                .param("birthAddress","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+    	assertEquals("[]", responseBody);
+    }
 
     @Test
     @DisplayName(value = "should update Ps")

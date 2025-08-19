@@ -242,7 +242,7 @@
 								<modelPackage>fr.ans.psc.model</modelPackage>
 								<apiPackage>fr.ans.psc.api</apiPackage>
 								<sourceFolder>src/main/java</sourceFolder>
-								<dateLibrary>threetenbp</dateLibrary>
+								<dateLibrary>java8</dateLibrary>
 								<delegatePattern>true</delegatePattern>
 								<useBeanValidation>true</useBeanValidation>
 								<skipOverwrite>true</skipOverwrite>

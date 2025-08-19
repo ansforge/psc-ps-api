@@ -480,6 +480,7 @@ paths:
           required: true
           schema:
             type: string
+            format: date
         - name: birthTownCode
           in: query
           required: false
