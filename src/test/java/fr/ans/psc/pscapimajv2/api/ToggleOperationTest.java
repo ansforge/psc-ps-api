@@ -86,7 +86,10 @@ public class ToggleOperationTest extends BaseOperationTest {
 		assertThat(memoryAppender.contains("Ps 81 successfully removed", Level.INFO)).isTrue();
 		assertThat(memoryAppender.contains("PsRef 550e8400-e29b-41d4-a716-446655440000 is now referencing Ps 81",
 				Level.INFO)).isTrue();
+		
 		Ps finalPs = psRepository.findByNationalId("550e8400-e29b-41d4-a716-446655440000");
+		Ps deletedPs = psRepository.findByNationalId("81");
+		assertTrue(deletedPs == null);
 
         assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "550e8400-e29b-41d4-a716-446655440000".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
         assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 1 && "81".equals(id.getIdentifier()) && "RPPS".equals(id.getOrigine() )));
@@ -120,7 +123,10 @@ public class ToggleOperationTest extends BaseOperationTest {
 				"PsRef 855e8700-e29b-41d4-a716-44665544111 is now referencing Ps 3 110000056/000000001", Level.INFO))
 				.isTrue();
 		Ps finalPs = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
-        assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "855e8700-e29b-41d4-a716-44665544111".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
+		Ps deletedPs = psRepository.findByNationalId("3 110000056/000000001");
+		assertTrue(deletedPs == null);
+        
+		assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "855e8700-e29b-41d4-a716-44665544111".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
         assertTrue(finalPs.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 1 && "3 110000056/000000001".equals(id.getIdentifier()) && "FINESS".equals(id.getOrigine() )));
 
 		assertTrue(finalPs.getIds().contains("855e8700-e29b-41d4-a716-44665544111"));
@@ -151,6 +157,8 @@ public class ToggleOperationTest extends BaseOperationTest {
 		assertThat(memoryAppender.contains("PsRef 811234567896 is now referencing Ps 4380527788/8165", Level.INFO))
 				.isTrue();
 		Ps finalPs = psRepository.findByNationalId("811234567896");
+		Ps deletedPs = psRepository.findByNationalId("4380527788/8165");
+		assertTrue(deletedPs == null);
 
 		assertTrue(finalPs.getIds().contains("811234567896"));
 		assertTrue(finalPs.getIds().contains("4380527788/8165"));
@@ -179,7 +187,10 @@ public class ToggleOperationTest extends BaseOperationTest {
 		assertThat(memoryAppender.contains("Ps 000327008728 successfully removed", Level.INFO)).isTrue();
 		assertThat(memoryAppender.contains("PsRef 538052778800034/8165 is now referencing Ps 000327008728", Level.INFO))
 				.isTrue();
+		
 		Ps finalPs = psRepository.findByNationalId("538052778800034/8165");
+		Ps deletedPs = psRepository.findByNationalId("000327008728");
+		assertTrue(deletedPs == null);
 
 		assertTrue(finalPs.getIds().contains("538052778800034/8165"));
 		assertTrue(finalPs.getIds().contains("000327008728"));
@@ -208,7 +219,10 @@ public class ToggleOperationTest extends BaseOperationTest {
 		assertThat(memoryAppender.contains("Ps 538052778800034/8165 successfully removed", Level.INFO)).isTrue();
 		assertThat(memoryAppender.contains("PsRef 3110000056000000001 is now referencing Ps 538052778800034/8165",
 				Level.INFO)).isTrue();
+		
 		Ps finalPs = psRepository.findByNationalId("3110000056000000001");
+		Ps deletedPs = psRepository.findByNationalId("538052778800034/8165");
+		assertTrue(deletedPs == null);
 
 		assertTrue(finalPs.getIds().contains("3110000056000000001"));
 		assertTrue(finalPs.getIds().contains("538052778800034/8165"));
