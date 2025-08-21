@@ -440,7 +440,7 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("genderCode", "M")
                 .param("birthdate", "1983-12-17")
                 .param("birthCountryCode","99000")
-                .param("birthAddressCode","57463")
+                .param("birthTownCode","57463")
         )
         .andExpect(status().is(200));
     	responseBody = result.andReturn().getResponse().getContentAsString();
@@ -456,8 +456,8 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("genderCode", "M")
                 .param("birthdate", "1983-12-17")
                 .param("birthCountryCode","99000")
-                .param("birthAddressCode","57463")
-                .param("birthAddress","METZ")
+                .param("birthTownCode","57463")
+                .param("birthPlace","METZ")
         )
         .andExpect(status().is(200));
     	responseBody = result.andReturn().getResponse().getContentAsString();
@@ -473,8 +473,8 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("genderCode", "M")
                 .param("birthdate", "1983-12-17")
                 .param("birthCountryCode","99000")
-                .param("birthAddressCode","57463")
-                .param("birthAddress","METZ")
+                .param("birthTownCode","57463")
+                .param("birthPlace","METZ")
         )
         .andExpect(status().is(200));
     	responseBody = result.andReturn().getResponse().getContentAsString();
@@ -490,8 +490,25 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("genderCode", "M")
                 .param("birthdate", "1983-12-17")
                 .param("birthCountryCode","99001")
-                .param("birthAddressCode","57463")
-                .param("birthAddress","METZ")
+                .param("birthTownCode","57463")
+                .param("birthPlace","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+    	assertEquals("[]", responseBody);
+    	
+        // All criterias, fake birthCountryCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthTownCode","57464")
+                .param("birthPlace","METZ")
         )
         .andExpect(status().is(200));
     	responseBody = result.andReturn().getResponse().getContentAsString();

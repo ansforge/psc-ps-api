@@ -46,13 +46,13 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         query.addCriteria(Criteria.where("dateOfBirth").is(birthdate.format(formatter)));
 
         if (birthTownCode != null) {
-            query.addCriteria(Criteria.where("birthTownCode").is(birthTownCode));
+            query.addCriteria(Criteria.where("birthAddressCode").is(birthTownCode));
         }
         if (birthCountryCode != null) {
             query.addCriteria(Criteria.where("birthCountryCode").is(birthCountryCode));
         }
         if (birthPlace != null) {
-            query.addCriteria(Criteria.where("birthPlace").is(birthPlace));
+            query.addCriteria(Criteria.where("birthAddress").is(birthPlace));
         }
 
         List<Ps> pss = mongoTemplate.find(query, Ps.class);
