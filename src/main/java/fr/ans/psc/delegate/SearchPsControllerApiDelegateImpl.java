@@ -27,7 +27,7 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         this.mongoTemplate = mongoTemplate;
     }
 	
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	@Override
 	public ResponseEntity<List<String>> rechercherNationalIdParTraitsIdentite(String lastName, String firstNames,
@@ -40,7 +40,7 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         
         Query query = new Query();
 
-        query.addCriteria(Criteria.where("firstNames.firstName").all(firstNamesList));
+        query.addCriteria(Criteria.where("firstNames.firstName").in(firstNamesList));
         query.addCriteria(Criteria.where("lastName").is(lastName));
         query.addCriteria(Criteria.where("genderCode").is(genderCode));
         query.addCriteria(Criteria.where("dateOfBirth").is(birthdate.format(formatter)));
