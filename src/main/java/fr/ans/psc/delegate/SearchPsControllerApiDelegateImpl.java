@@ -27,20 +27,20 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         this.mongoTemplate = mongoTemplate;
     }
 	
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 	@Override
 	public ResponseEntity<List<String>> rechercherNationalIdParTraitsIdentite(String lastName, String firstNames,
-			String genderCode, LocalDate birthdate, String birthTownCode, String birthCountryCode, String birthPlace) {
+			String genderCode, LocalDate birthdate, String birthTownCode, String birthCountryCode, String birthplace) {
 		
 		log.debug("rechercherNationalIdParTraitsIdentite {} {} {} {} {} {} {}", lastName, firstNames, genderCode,
-				birthdate, birthTownCode, birthCountryCode, birthPlace);
+				birthdate, birthTownCode, birthCountryCode, birthplace);
 		
 		List<String> firstNamesList = Arrays.asList(firstNames.split(" "));
         
         Query query = new Query();
 
-        query.addCriteria(Criteria.where("firstNames.firstName").in(firstNamesList));
+        query.addCriteria(Criteria.where("firstNames.firstName").all(firstNamesList));
         query.addCriteria(Criteria.where("lastName").is(lastName));
         query.addCriteria(Criteria.where("genderCode").is(genderCode));
         query.addCriteria(Criteria.where("dateOfBirth").is(birthdate.format(formatter)));
@@ -51,8 +51,8 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         if (birthCountryCode != null) {
             query.addCriteria(Criteria.where("birthCountryCode").is(birthCountryCode));
         }
-        if (birthPlace != null) {
-            query.addCriteria(Criteria.where("birthAddress").is(birthPlace));
+        if (birthplace != null) {
+            query.addCriteria(Criteria.where("birthAddress").is(birthplace));
         }
 
         List<Ps> pss = mongoTemplate.find(query, Ps.class);
