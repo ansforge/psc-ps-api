@@ -134,6 +134,16 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             }
             // if ids is empty or null, use that of storedPs
             ApiUtils.setAppropriateIds(ps, storedPs);
+            
+            // Ensure the new nationalId (UUID) is always in the ids list for searchability
+            if (!ps.getIds().contains(ps.getNationalId())) {
+                ps.getIds().add(ps.getNationalId());
+                log.info("Added nationalId {} to ids list for PS {}", ps.getNationalId(), existingId);
+            }
+            
+            // Regenerate alternativeIds with the updated ids list
+            ps.setAlternativeIds(ApiUtils.idTripletCreationFromIds(ps.getIds()));
+            
             ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
             if (existingId != null && !"".equals(existingId) && !ps.getNationalId().equals(existingId)) {
