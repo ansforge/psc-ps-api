@@ -79,8 +79,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     public ResponseEntity<Void> createNewPs(Ps ps) {
         long timestamp = ApiUtils.getInstantTimestamp();
         Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
-        // Remove prof
-        ps.setProfessions(new ArrayList<Profession>());
+        // Remove prof - COMMENTED OUT to preserve professions data
+        // ps.setProfessions(new ArrayList<Profession>());
         // PS EXISTS, UPDATE AND REACTIVATION
         if (storedPs != null) {
             // DON'T UPDATE IF ALREADY ACTIVATED
@@ -117,7 +117,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     @Override
     public ResponseEntity<Void> updatePs(Ps ps, String existingId) {
         // check if ps is activated before trying to update it
-        Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
+        // Use existingId parameter to find the stored PS, not ps.getNationalId()
+        String searchId = existingId != null && !existingId.isEmpty() ? existingId : ps.getNationalId();
+        Ps storedPs = psRepository.findByIdsContaining(searchId);
         if (storedPs != null) {
             if (!ApiUtils.isPsActivated(storedPs)) {
                 log.warn("Ps {} is deactivated, can not update it", ps.getNationalId());
