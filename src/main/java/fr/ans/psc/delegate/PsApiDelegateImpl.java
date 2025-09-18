@@ -25,11 +25,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.ans.psc.api.PsApiDelegate;
+import fr.ans.psc.model.AlternativeIdentifier;
 import fr.ans.psc.model.Profession;
 import fr.ans.psc.model.Ps;
 import fr.ans.psc.model.PsRef;
@@ -57,7 +60,21 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     public ResponseEntity<Ps> getPsById(String encodedPsId) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         String operationLog;
-        Ps ps = psRepository.findByIdsContaining(psId);
+        Ps ps;
+        
+        try {
+            ps = psRepository.findByIdsContaining(psId);
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            log.warn("Multiple PS found with id {}, searching for active one using MongoTemplate", psId);
+            // Use MongoTemplate to get all PS containing this ID and find the active one
+            Query query = new Query(Criteria.where("ids").in(psId));
+            List<Ps> psList = mongoTemplate.find(query, Ps.class);
+            ps = psList.stream()
+                    .filter(ApiUtils::isPsActivated)
+                    .findFirst()
+                    .orElse(psList.isEmpty() ? null : psList.get(0));
+        }
+        
         // check if Ps containing that id exists
         if (ps == null) {
             operationLog = "No Ps found with nationalIdRef {}";
@@ -78,7 +95,20 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     @Override
     public ResponseEntity<Void> createNewPs(Ps ps) {
         long timestamp = ApiUtils.getInstantTimestamp();
-        Ps storedPs = psRepository.findByIdsContaining(ps.getNationalId());
+        Ps storedPs;
+        
+        try {
+            storedPs = psRepository.findByIdsContaining(ps.getNationalId());
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            log.warn("Multiple PS found with nationalId {}, searching for active one using MongoTemplate", ps.getNationalId());
+            Query query = new Query(Criteria.where("ids").in(ps.getNationalId()));
+            List<Ps> psList = mongoTemplate.find(query, Ps.class);
+            storedPs = psList.stream()
+                    .filter(ApiUtils::isPsActivated)
+                    .findFirst()
+                    .orElse(psList.isEmpty() ? null : psList.get(0));
+        }
+        
         // Remove prof - COMMENTED OUT to preserve professions data
         // ps.setProfessions(new ArrayList<Profession>());
         // PS EXISTS, UPDATE AND REACTIVATION
@@ -119,7 +149,21 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         // check if ps is activated before trying to update it
         // Use existingId parameter to find the stored PS, not ps.getNationalId()
         String searchId = existingId != null && !existingId.isEmpty() ? existingId : ps.getNationalId();
-        Ps storedPs = psRepository.findByIdsContaining(searchId);
+        Ps storedPs;
+        
+        try {
+            storedPs = psRepository.findByIdsContaining(searchId);
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            log.warn("Multiple PS found with searchId {}, searching for active one using MongoTemplate", searchId);
+            // Use MongoTemplate to get all PS containing this ID and find the active one
+            Query query = new Query(Criteria.where("ids").in(searchId));
+            List<Ps> psList = mongoTemplate.find(query, Ps.class);
+            storedPs = psList.stream()
+                    .filter(ApiUtils::isPsActivated)
+                    .findFirst()
+                    .orElse(psList.isEmpty() ? null : psList.get(0));
+        }
+        
         if (storedPs != null) {
             if (!ApiUtils.isPsActivated(storedPs)) {
                 log.warn("Ps {} is deactivated, can not update it", ps.getNationalId());
@@ -130,7 +174,30 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             ps.setActivated(storedPs.getActivated());
             ps.setDeactivated(storedPs.getDeactivated());
             if (ApiUtils.isValidUUID(ps.getNationalId())) {
-                ps.setProfessions(storedPs.getProfessions());
+                // Always preserve professions from stored PS for UUID-based PS (PSI)
+                if (storedPs.getProfessions() != null && !storedPs.getProfessions().isEmpty()) {
+                    ps.setProfessions(storedPs.getProfessions());
+                    log.info("Preserved existing professions from stored PS for {}", ps.getNationalId());
+                } else {
+                    // If stored PS has no professions, look for professions in alternativeIdentifiers
+                    log.info("Stored PS has no professions, looking in alternative identifiers");
+                    if (ps.getAlternativeIds() != null) {
+                        for (fr.ans.psc.model.AlternativeIdentifier altId : ps.getAlternativeIds()) {
+                            if (!altId.getIdentifier().equals(ps.getNationalId())) {
+                                try {
+                                    Ps professionPs = psRepository.findByNationalId(altId.getIdentifier());
+                                    if (professionPs != null && professionPs.getProfessions() != null && !professionPs.getProfessions().isEmpty()) {
+                                        ps.setProfessions(professionPs.getProfessions());
+                                        log.info("Found and preserved professions from PS {}", altId.getIdentifier());
+                                        break;
+                                    }
+                                } catch (Exception e) {
+                                    log.warn("Could not find professions for alternative identifier {}", altId.getIdentifier());
+                                }
+                            }
+                        }
+                    }
+                }
             }
             // if ids is empty or null, use that of storedPs
             ApiUtils.setAppropriateIds(ps, storedPs);
@@ -146,9 +213,39 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             
             ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
+            
+            // Trigger fusion based on nationalId change (existing logic)
             if (existingId != null && !"".equals(existingId) && !ps.getNationalId().equals(existingId)) {
                 PsRef psRef = new PsRef(existingId, ps.getNationalId(), ps.getActivated(), ps.getDeactivated());
                 toggleApiDelegateImpl.togglePsref(psRef);
+            }
+            
+            // NEW LOGIC: Trigger fusion based on alternativeIdentifiers
+            // If nationalId is PSI UUID and alternativeIdentifiers contain other PS to merge
+            if (ApiUtils.isValidUUID(ps.getNationalId()) && ps.getAlternativeIds() != null) {
+                for (fr.ans.psc.model.AlternativeIdentifier altId : ps.getAlternativeIds()) {
+                    String altIdentifier = altId.getIdentifier();
+                    // Skip the PS's own nationalId
+                    if (!altIdentifier.equals(ps.getNationalId())) {
+                        // Check if there's an existing PS with this altIdentifier - handle multiple results
+                        try {
+                            Ps existingPsToMerge = psRepository.findByIdsContaining(altIdentifier);
+                            if (existingPsToMerge != null && !existingPsToMerge.getNationalId().equals(ps.getNationalId())) {
+                                log.info("Found existing PS {} to merge with {}", altIdentifier, ps.getNationalId());
+                                PsRef psRef = new PsRef(altIdentifier, ps.getNationalId(), ps.getActivated(), ps.getDeactivated());
+                                toggleApiDelegateImpl.togglePsref(psRef);
+                            }
+                        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                            log.warn("Multiple PS found with altIdentifier {}, using findByNationalId instead", altIdentifier);
+                            Ps existingPsToMerge = psRepository.findByNationalId(altIdentifier);
+                            if (existingPsToMerge != null && !existingPsToMerge.getNationalId().equals(ps.getNationalId())) {
+                                log.info("Found existing PS {} to merge with {}", altIdentifier, ps.getNationalId());
+                                PsRef psRef = new PsRef(altIdentifier, ps.getNationalId(), ps.getActivated(), ps.getDeactivated());
+                                toggleApiDelegateImpl.togglePsref(psRef);
+                            }
+                        }
+                    }
+                }
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
@@ -160,7 +257,20 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     @Override
     public ResponseEntity<Void> deletePsById(String encodedPsId) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
-        Ps storedPs = psRepository.findByIdsContaining(psId);
+        Ps storedPs;
+        
+        try {
+            storedPs = psRepository.findByIdsContaining(psId);
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            log.warn("Multiple PS found with psId {}, searching for active one using MongoTemplate", psId);
+            Query query = new Query(Criteria.where("ids").in(psId));
+            List<Ps> psList = mongoTemplate.find(query, Ps.class);
+            storedPs = psList.stream()
+                    .filter(ApiUtils::isPsActivated)
+                    .findFirst()
+                    .orElse(psList.isEmpty() ? null : psList.get(0));
+        }
+        
         if (storedPs == null) {
             log.warn("No Ps found with nationalId {}, will not be deleted", psId);
             return new ResponseEntity<>(HttpStatus.GONE);

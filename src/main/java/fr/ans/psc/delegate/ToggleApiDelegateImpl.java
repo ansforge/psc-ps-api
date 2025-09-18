@@ -15,7 +15,11 @@
  */
 package fr.ans.psc.delegate;
 
+import java.util.List;
+
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -62,8 +66,8 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 			targetId = origin1.equals(ApiUtils.PSI) ? nationalId : nationalIdRef;
 			oldId = origin1.equals(ApiUtils.RPPS) ? nationalId : nationalIdRef;
 
-			targetPs = psRepository.findByIdsContaining(targetId);
-			oldPs = psRepository.findByIdsContaining(oldId);
+			targetPs = findPsByIdSafely(targetId);
+			oldPs = findPsByIdSafely(oldId);
 
 			if (targetPs != null && oldPs != null) {
 				targetPs.setProfessions(oldPs.getProfessions());
@@ -103,8 +107,8 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 		if (!((origin1.equals(ApiUtils.PSI) && origin2.equals(ApiUtils.RPPS))
 				|| (origin1.equals(ApiUtils.RPPS) && origin2.equals(ApiUtils.PSI)))) {
 
-			targetPs = psRepository.findByIdsContaining(targetId);
-			oldPs = psRepository.findByIdsContaining(oldId);
+			targetPs = findPsByIdSafely(targetId);
+			oldPs = findPsByIdSafely(oldId);
 
 		}
 
@@ -154,7 +158,7 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 		String nationalIdRef = psRef.getNationalIdRef();
 		String nationalId = psRef.getNationalId();
 
-		Ps ps = psRepository.findByIdsContaining(nationalId);
+		Ps ps = findPsByIdSafely(nationalId);
 
 		if (ps == null) {
 			String result = String.format("Could not remove PsRef %s from Ps %s because this Ps does not exist",
@@ -179,5 +183,21 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-
+	
+	/**
+	 * Helper method to safely find a PS by ID, handling multiple results
+	 */
+	private Ps findPsByIdSafely(String id) {
+		try {
+			return psRepository.findByIdsContaining(id);
+		} catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+			log.warn("Multiple PS found with id {}, searching for active one using MongoTemplate", id);
+			Query query = new Query(Criteria.where("ids").in(id));
+			List<Ps> psList = mongoTemplate.find(query, Ps.class);
+			return psList.stream()
+					.filter(ApiUtils::isPsActivated)
+					.findFirst()
+					.orElse(psList.isEmpty() ? null : psList.get(0));
+		}
+	}
 }
