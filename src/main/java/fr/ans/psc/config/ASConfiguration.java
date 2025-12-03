@@ -44,13 +44,8 @@ public class ASConfiguration {
       @Override
       public void configurePathMatch(PathMatchConfigurer configurer) {
         final UrlPathHelper urlPathHelper = new UrlPathHelper();
-        // Keep URL encoded to preserve %2F as-is (will be decoded in the controller)
         urlPathHelper.setUrlDecode(false);
-        // Allow encoded slashes and other special characters
-        urlPathHelper.setRemoveSemicolonContent(false);
         configurer.setUrlPathHelper(urlPathHelper);
-        // Disable suffix pattern matching to allow .+ regex patterns
-        configurer.setUseRegisteredSuffixPatternMatch(false);
       }
     };
   }
