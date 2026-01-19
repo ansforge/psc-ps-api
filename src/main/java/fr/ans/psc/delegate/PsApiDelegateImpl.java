@@ -230,18 +230,26 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                         // Check if there's an existing PS with this altIdentifier - handle multiple results
                         try {
                             Ps existingPsToMerge = psRepository.findByIdsContaining(altIdentifier);
-                            if (existingPsToMerge != null && !existingPsToMerge.getNationalId().equals(ps.getNationalId())) {
-                                log.info("Found existing PS {} to merge with {}", altIdentifier, ps.getNationalId());
+                            // Only merge if the existing PS is activated
+                            if (existingPsToMerge != null && !existingPsToMerge.getNationalId().equals(ps.getNationalId()) 
+                                    && ApiUtils.isPsActivated(existingPsToMerge)) {
+                                log.info("Found existing activated PS {} to merge with {}", altIdentifier, ps.getNationalId());
                                 PsRef psRef = new PsRef(altIdentifier, ps.getNationalId(), ps.getActivated(), ps.getDeactivated());
                                 toggleApiDelegateImpl.togglePsref(psRef);
+                            } else if (existingPsToMerge != null && !ApiUtils.isPsActivated(existingPsToMerge)) {
+                                log.warn("PS {} is deactivated, skipping merge with {}", altIdentifier, ps.getNationalId());
                             }
                         } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
                             log.warn("Multiple PS found with altIdentifier {}, using findByNationalId instead", altIdentifier);
                             Ps existingPsToMerge = psRepository.findByNationalId(altIdentifier);
-                            if (existingPsToMerge != null && !existingPsToMerge.getNationalId().equals(ps.getNationalId())) {
-                                log.info("Found existing PS {} to merge with {}", altIdentifier, ps.getNationalId());
+                            // Only merge if the existing PS is activated
+                            if (existingPsToMerge != null && !existingPsToMerge.getNationalId().equals(ps.getNationalId()) 
+                                    && ApiUtils.isPsActivated(existingPsToMerge)) {
+                                log.info("Found existing activated PS {} to merge with {}", altIdentifier, ps.getNationalId());
                                 PsRef psRef = new PsRef(altIdentifier, ps.getNationalId(), ps.getActivated(), ps.getDeactivated());
                                 toggleApiDelegateImpl.togglePsref(psRef);
+                            } else if (existingPsToMerge != null && !ApiUtils.isPsActivated(existingPsToMerge)) {
+                                log.warn("PS {} is deactivated, skipping merge with {}", altIdentifier, ps.getNationalId());
                             }
                         }
                     }

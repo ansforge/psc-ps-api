@@ -122,6 +122,13 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 				return new ResponseEntity<>(result, HttpStatus.CONFLICT);
 
 			} else {
+				// STEP 2.5: check if oldPs is activated before merging
+				if (oldPs != null && !ApiUtils.isPsActivated(oldPs)) {
+					String result = String.format("Cannot merge deactivated Ps %s with Ps %s", oldId, targetId);
+					log.warn(result);
+					return new ResponseEntity<>(result, HttpStatus.NOT_ACCEPTABLE);
+				}
+				
 				// STEP 3: remove deprecated ps
 				if (oldPs != null) {
 					mongoTemplate.remove(oldPs);
