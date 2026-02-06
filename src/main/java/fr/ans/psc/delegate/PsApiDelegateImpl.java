@@ -315,6 +315,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         log.debug("get Ps By Page, page {} of size {}", page, size == null ? PAGE_SIZE : size.intValue());
         Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
 
+        // Note: findAll() excludes alternativeIds via @Query projection to reduce memory usage
         Page<Ps> psPage = psRepository.findAll(paging);
         if (psPage != null && !psPage.isEmpty()) {
             ArrayList<Ps> psList = new ArrayList<>(psPage.getContent());
