@@ -56,16 +56,15 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         
         Query query = new Query();
 
-        // Recherche insensible à la casse pour les prénoms
-        // On crée une regex case-insensitive pour chaque prénom
-        List<Pattern> firstNamePatterns = firstNamesList.stream()
-            .map(this::createCaseInsensitivePattern)
+        // Recherche optimisée avec index sur champs lowercase (equality au lieu de regex)
+        List<String> firstNamesLower = firstNamesList.stream()
+            .map(String::toLowerCase)
             .collect(Collectors.toList());
         
-        query.addCriteria(Criteria.where("firstNames.firstName").all(firstNamePatterns));
+        query.addCriteria(Criteria.where("firstNamesLowerArray").all(firstNamesLower));
         
-        // Recherche insensible à la casse pour le nom
-        query.addCriteria(Criteria.where("lastName").regex(createCaseInsensitivePattern(lastName)));
+        // Recherche par égalité (au lieu de regex) - utilise l'index
+        query.addCriteria(Criteria.where("lastNameLower").is(lastName.toLowerCase()));
         
         query.addCriteria(Criteria.where("genderCode").is(genderCode));
         query.addCriteria(Criteria.where("dateOfBirth").is(birthdate.format(formatter)));
@@ -77,7 +76,7 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
             query.addCriteria(Criteria.where("birthCountryCode").is(birthCountryCode));
         }
         if (birthplace != null) {
-            query.addCriteria(Criteria.where("birthAddress").is(birthplace));
+            query.addCriteria(Criteria.where("birthAddressLower").is(birthplace.toLowerCase()));
         }
 
         List<Ps> pss = mongoTemplate.find(query, Ps.class);

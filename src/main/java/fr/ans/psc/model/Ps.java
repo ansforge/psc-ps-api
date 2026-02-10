@@ -19,6 +19,7 @@ package fr.ans.psc.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,6 +29,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
@@ -74,6 +76,19 @@ public class Ps implements Cloneable {
 
 	@JsonProperty("genderCode")
 	private String genderCode;
+
+	// Champs pour optimisation de la recherche (lowercase, non exposés dans l'API)
+	@JsonIgnore
+	@Indexed
+	private String lastNameLower;
+
+	@JsonIgnore
+	@Indexed
+	private String birthAddressLower;
+
+	@JsonIgnore
+	@Indexed
+	private List<String> firstNamesLowerArray;
 
 	@JsonProperty("phone")
 	private String phone;
@@ -178,6 +193,7 @@ public class Ps implements Cloneable {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+		this.lastNameLower = lastName != null ? lastName.toLowerCase() : null;
 	}
 
 	/**
@@ -192,6 +208,13 @@ public class Ps implements Cloneable {
 
 	public void setFirstNames(List<FirstName> firstNames) {
 		this.firstNames = firstNames;
+		this.firstNamesLowerArray = firstNames != null 
+			? firstNames.stream()
+				.map(FirstName::getFirstName)
+				.filter(fn -> fn != null)
+				.map(String::toLowerCase)
+				.collect(Collectors.toList())
+			: null;
 	}
 
 	/**
@@ -248,6 +271,7 @@ public class Ps implements Cloneable {
 
 	public void setBirthAddress(String birthAddress) {
 		this.birthAddress = birthAddress;
+		this.birthAddressLower = birthAddress != null ? birthAddress.toLowerCase() : null;
 	}
 
 	/**
@@ -262,6 +286,31 @@ public class Ps implements Cloneable {
 
 	public void setGenderCode(String genderCode) {
 		this.genderCode = genderCode;
+	}
+
+	// Getters pour les champs de recherche optimisée
+	public String getLastNameLower() {
+		return lastNameLower;
+	}
+
+	public void setLastNameLower(String lastNameLower) {
+		this.lastNameLower = lastNameLower;
+	}
+
+	public String getBirthAddressLower() {
+		return birthAddressLower;
+	}
+
+	public void setBirthAddressLower(String birthAddressLower) {
+		this.birthAddressLower = birthAddressLower;
+	}
+
+	public List<String> getFirstNamesLowerArray() {
+		return firstNamesLowerArray;
+	}
+
+	public void setFirstNamesLowerArray(List<String> firstNamesLowerArray) {
+		this.firstNamesLowerArray = firstNamesLowerArray;
 	}
 
 	/**
