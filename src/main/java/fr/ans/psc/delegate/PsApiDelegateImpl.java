@@ -62,17 +62,23 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         String operationLog;
         Ps ps;
         
-        try {
-            ps = psRepository.findByIdsContaining(psId);
-        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
-            log.warn("Multiple PS found with id {}, searching for active one using MongoTemplate", psId);
-            // Use MongoTemplate to get all PS containing this ID and find the active one
-            Query query = new Query(Criteria.where("ids").in(psId));
-            List<Ps> psList = mongoTemplate.find(query, Ps.class);
-            ps = psList.stream()
-                    .filter(ApiUtils::isPsActivated)
-                    .findFirst()
-                    .orElse(psList.isEmpty() ? null : psList.get(0));
+        // Optimization: Try nationalId first (uses unique index, < 1ms)
+        ps = psRepository.findByNationalId(psId);
+        
+        // Fallback: search in ids array if not found by nationalId
+        if (ps == null) {
+            try {
+                ps = psRepository.findByIdsContaining(psId);
+            } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                log.warn("Multiple PS found with id {}, searching for active one using MongoTemplate", psId);
+                // Use MongoTemplate to get all PS containing this ID and find the active one
+                Query query = new Query(Criteria.where("ids").in(psId));
+                List<Ps> psList = mongoTemplate.find(query, Ps.class);
+                ps = psList.stream()
+                        .filter(ApiUtils::isPsActivated)
+                        .findFirst()
+                        .orElse(psList.isEmpty() ? null : psList.get(0));
+            }
         }
         
         // check if Ps containing that id exists
