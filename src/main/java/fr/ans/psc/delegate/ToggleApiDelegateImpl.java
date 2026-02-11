@@ -49,9 +49,13 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 	public ResponseEntity<String> togglePsref(PsRef psRef) {
 		String nationalIdRef = psRef.getNationalIdRef();
 		String nationalId = psRef.getNationalId();
+		
+		log.info("TOGGLE FUSION START: nationalIdRef={}, nationalId={}", nationalIdRef, nationalId);
 
 		String origin1 = ApiUtils.determineOriginAndType(nationalId).get(ApiUtils.ORIGIN);
 		String origin2 = ApiUtils.determineOriginAndType(nationalIdRef).get(ApiUtils.ORIGIN);
+		
+		log.debug("Origins: origin1={}, origin2={}", origin1, origin2);
 
 		String targetId;
 		String oldId;
@@ -66,8 +70,8 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 			targetId = origin1.equals(ApiUtils.PSI) ? nationalId : nationalIdRef;
 			oldId = origin1.equals(ApiUtils.RPPS) ? nationalId : nationalIdRef;
 
-			targetPs = findPsByIdSafely(targetId);
-			oldPs = findPsByIdSafely(oldId);
+			targetPs = findPsByNationalIdOrIds(targetId);
+			oldPs = findPsByNationalIdOrIds(oldId);
 
 			if (targetPs != null && oldPs != null) {
 				targetPs.setProfessions(oldPs.getProfessions());
@@ -103,18 +107,24 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 			targetId = nationalId;
 			oldId = nationalIdRef;
 		}
+		
+		log.info("Fusion decision: targetId={} (will keep), oldId={} (will delete)", targetId, oldId);
 
 		if (!((origin1.equals(ApiUtils.PSI) && origin2.equals(ApiUtils.RPPS))
 				|| (origin1.equals(ApiUtils.RPPS) && origin2.equals(ApiUtils.PSI)))) {
 
-			targetPs = findPsByIdSafely(targetId);
-			oldPs = findPsByIdSafely(oldId);
+			targetPs = findPsByNationalIdOrIds(targetId);
+			oldPs = findPsByNationalIdOrIds(oldId);
+			
+			log.info("Found targetPs: {} (nationalId={})", targetPs != null, targetPs != null ? targetPs.getNationalId() : "null");
+			log.info("Found oldPs: {} (nationalId={})", oldPs != null, oldPs != null ? oldPs.getNationalId() : "null");
 
 		}
 
 		// STEP 1: check if target Ps exists
 		if (targetPs != null) {
 			targetPs.setIdType(ApiUtils.determineOriginAndType(targetPs.getNationalId()).get(ApiUtils.ID_TYPE));
+			
 			// STEP 2: check if target ps contains psRef's nationalIdRef in ids
 			if (targetPs.getIds().contains(oldId)) {
 				String result = String.format("PsRef %s already references Ps %s, no need to toggle", oldId, targetId);
@@ -122,17 +132,27 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 				return new ResponseEntity<>(result, HttpStatus.CONFLICT);
 
 			} else {
-				// STEP 2.5: check if oldPs is activated before merging
+				// STEP 2.5: Ensure oldPs is not the same as targetPs (prevent deleting wrong PS)
+				if (oldPs != null && oldPs.getNationalId().equals(targetPs.getNationalId())) {
+					String result = String.format("Cannot merge: oldPs and targetPs are the same (%s). Fusion already done?", targetPs.getNationalId());
+					log.warn(result);
+					return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+				}
+				
+				// STEP 2.6: check if oldPs is activated before merging
 				if (oldPs != null && !ApiUtils.isPsActivated(oldPs)) {
 					String result = String.format("Cannot merge deactivated Ps %s with Ps %s", oldId, targetId);
 					log.warn(result);
 					return new ResponseEntity<>(result, HttpStatus.NOT_ACCEPTABLE);
 				}
 				
-				// STEP 3: remove deprecated ps
+				// STEP 3: remove deprecated ps (CRITICAL - ensures old PS is deleted)
 				if (oldPs != null) {
+					log.info("Removing old PS {} (will be merged into {})", oldPs.getNationalId(), targetPs.getNationalId());
 					mongoTemplate.remove(oldPs);
-					log.info("Ps {} successfully removed", oldPs.getNationalId());
+					log.info("Ps {} successfully removed from database", oldPs.getNationalId());
+				} else {
+					log.warn("oldPs is null for id {}, cannot remove (may already be deleted)", oldId);
 				}
 			}
 
@@ -191,12 +211,52 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
+	
+	/**
+	 * Helper method to find PS by exact nationalId first, then in ids array
+	 * This ensures we get the correct PS when merging (not the already-merged one)
+	 */
+	private Ps findPsByNationalIdOrIds(String id) {
+		// CRITICAL: First try exact nationalId match to get the original PS
+		Ps ps = psRepository.findByNationalId(id);
+		if (ps != null) {
+			log.debug("Found PS by exact nationalId: {}", id);
+			return ps;
+		}
+		
+		// Fallback: search in ids array (for already-merged accounts)
+		log.debug("Not found by nationalId, searching in ids array: {}", id);
+		return findPsByIdSafely(id);
+	}
+	
 	/**
 	 * Helper method to safely find a PS by ID, handling multiple results
+	 * Prioritizes nationalId lookup, then searches in ids array
+	 * Always returns the activated PS if multiple matches exist
 	 */
 	private Ps findPsByIdSafely(String id) {
+		// First try by nationalId (fast, uses unique index)
+		Ps ps = psRepository.findByNationalId(id);
+		if (ps != null) {
+			return ps;
+		}
+		
+		// Fallback: search in ids array
 		try {
-			return psRepository.findByIdsContaining(id);
+			ps = psRepository.findByIdsContaining(id);
+			
+			// If found but deactivated, search for active merged account
+			if (ps != null && !ApiUtils.isPsActivated(ps)) {
+				log.info("PS {} found but deactivated, searching for active merged account", id);
+				Query query = new Query(Criteria.where("ids").in(id).and("activated").ne(null));
+				List<Ps> activePsList = mongoTemplate.find(query, Ps.class);
+				return activePsList.stream()
+						.filter(ApiUtils::isPsActivated)
+						.findFirst()
+						.orElse(ps); // Keep deactivated one if no active found
+			}
+			
+			return ps;
 		} catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
 			log.warn("Multiple PS found with id {}, searching for active one using MongoTemplate", id);
 			Query query = new Query(Criteria.where("ids").in(id));

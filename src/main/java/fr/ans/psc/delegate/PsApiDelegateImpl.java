@@ -69,6 +69,17 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         if (ps == null) {
             try {
                 ps = psRepository.findByIdsContaining(psId);
+                
+                // If found but deactivated, search for active merged account
+                if (ps != null && !ApiUtils.isPsActivated(ps)) {
+                    log.info("PS {} found but deactivated, searching for active merged account", psId);
+                    Query query = new Query(Criteria.where("ids").in(psId).and("activated").ne(null));
+                    List<Ps> activePsList = mongoTemplate.find(query, Ps.class);
+                    ps = activePsList.stream()
+                            .filter(ApiUtils::isPsActivated)
+                            .findFirst()
+                            .orElse(ps); // Keep deactivated one if no active found
+                }
             } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
                 log.warn("Multiple PS found with id {}, searching for active one using MongoTemplate", psId);
                 // Use MongoTemplate to get all PS containing this ID and find the active one
