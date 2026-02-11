@@ -127,6 +127,18 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 			
 			// STEP 2: check if target ps contains psRef's nationalIdRef in ids
 			if (targetPs.getIds().contains(oldId)) {
+				log.info("Fusion already done: targetPs {} already contains oldId {}", targetPs.getNationalId(), oldId);
+				
+				// CRITICAL FIX: Clean up orphaned oldPs if it still exists
+				if (oldPs != null && !oldPs.getNationalId().equals(targetPs.getNationalId())) {
+					log.warn("CLEANUP: Found orphaned PS {} that should have been deleted during fusion. Deleting now.", oldPs.getNationalId());
+					mongoTemplate.remove(oldPs);
+					log.info("Orphaned PS {} successfully removed", oldPs.getNationalId());
+					
+					String result = String.format("Fusion was already done, but cleaned up orphaned PS %s", oldId);
+					return new ResponseEntity<>(result, HttpStatus.OK);
+				}
+				
 				String result = String.format("PsRef %s already references Ps %s, no need to toggle", oldId, targetId);
 				log.info(result);
 				return new ResponseEntity<>(result, HttpStatus.CONFLICT);
