@@ -223,10 +223,26 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             if (!ps.getIds().contains(ps.getNationalId())) {
                 ps.getIds().add(ps.getNationalId());
                 log.info("Added nationalId {} to ids list for PS {}", ps.getNationalId(), existingId);
+                // Regenerate alternativeIds to include the newly added nationalId
+                // Save existing quality values first
+                java.util.Map<String, Integer> qualityMap = new java.util.HashMap<>();
+                if (ps.getAlternativeIds() != null) {
+                    for (fr.ans.psc.model.AlternativeIdentifier altId : ps.getAlternativeIds()) {
+                        if (altId.getIdentifier() != null && altId.getQuality() != null) {
+                            qualityMap.put(altId.getIdentifier(), altId.getQuality());
+                        }
+                    }
+                }
+                ps.setAlternativeIds(ApiUtils.idTripletCreationFromIds(ps.getIds()));
+                // Restore quality values
+                if (!qualityMap.isEmpty() && ps.getAlternativeIds() != null) {
+                    for (fr.ans.psc.model.AlternativeIdentifier altId : ps.getAlternativeIds()) {
+                        if (altId.getIdentifier() != null && qualityMap.containsKey(altId.getIdentifier())) {
+                            altId.setQuality(qualityMap.get(altId.getIdentifier()));
+                        }
+                    }
+                }
             }
-            
-            // Regenerate alternativeIds with the updated ids list
-            ps.setAlternativeIds(ApiUtils.idTripletCreationFromIds(ps.getIds()));
             
             ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());

@@ -113,6 +113,16 @@ public class ApiUtils {
     }
 
     public static void setAppropriateIds(Ps psToCheck, Ps storedPs) {
+        // Sauvegarder les quality explicitement fournis dans les alternativeIds (si présents)
+        Map<String, Integer> qualityMap = new HashMap<>();
+        if (psToCheck.getAlternativeIds() != null && !psToCheck.getAlternativeIds().isEmpty()) {
+            for (AlternativeIdentifier altId : psToCheck.getAlternativeIds()) {
+                if (altId.getIdentifier() != null && altId.getQuality() != null) {
+                    qualityMap.put(altId.getIdentifier(), altId.getQuality());
+                }
+            }
+        }
+
         if (psToCheck.getIds() == null || psToCheck.getIds().isEmpty()) {
             psToCheck.setIds(storedPs == null || storedPs.getIds() == null
                     ? new ArrayList<>(Collections.singletonList(psToCheck.getNationalId()))
@@ -120,6 +130,17 @@ public class ApiUtils {
         } else if (!psToCheck.getIds().contains(psToCheck.getNationalId())) {
             psToCheck.getIds().add(psToCheck.getNationalId());
         }
+        
+        // Créer les alternativeIds à partir des ids
         psToCheck.setAlternativeIds(ApiUtils.idTripletCreationFromIds(psToCheck.getIds()));
+        
+        // Réappliquer les quality sauvegardés (s'ils existent)
+        if (!qualityMap.isEmpty() && psToCheck.getAlternativeIds() != null) {
+            for (AlternativeIdentifier altId : psToCheck.getAlternativeIds()) {
+                if (altId.getIdentifier() != null && qualityMap.containsKey(altId.getIdentifier())) {
+                    altId.setQuality(qualityMap.get(altId.getIdentifier()));
+                }
+            }
+        }
     }
 }
