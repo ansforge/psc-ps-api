@@ -348,14 +348,13 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         log.debug("get Ps By Page, page {} of size {}", page, size == null ? PAGE_SIZE : size.intValue());
         Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
 
-        // Use MongoTemplate with projection to exclude alternativeIds
+        // Use MongoTemplate with pagination
         Query query = new Query().with(paging);
-        query.fields().exclude("alternativeIds");
         
         List<Ps> psList = mongoTemplate.find(query, Ps.class);
         
         if (psList != null && !psList.isEmpty()) {
-            log.debug("List of Ps successfully retrieved (without alternativeIds)");
+            log.debug("List of Ps successfully retrieved");
             return new ResponseEntity<>(psList, HttpStatus.OK);
         } else {
             log.debug("No more Ps on this page");
