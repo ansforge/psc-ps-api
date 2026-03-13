@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class ApiUtils {
@@ -139,6 +141,26 @@ public class ApiUtils {
             for (AlternativeIdentifier altId : psToCheck.getAlternativeIds()) {
                 if (altId.getIdentifier() != null && qualityMap.containsKey(altId.getIdentifier())) {
                     altId.setQuality(qualityMap.get(altId.getIdentifier()));
+                }
+            }
+        }
+
+        // Fusionner les alternativeIds du storedPs qui ne sont pas déjà représentés
+        // (ex : CAB_RPPS présent dans alternativeIds de storedPs mais absent de ses ids)
+        if (storedPs != null && storedPs.getAlternativeIds() != null && !storedPs.getAlternativeIds().isEmpty()) {
+            Set<String> existingIdentifiers = new HashSet<>();
+            for (AlternativeIdentifier altId : psToCheck.getAlternativeIds()) {
+                if (altId.getIdentifier() != null) {
+                    existingIdentifiers.add(altId.getIdentifier());
+                }
+            }
+            for (AlternativeIdentifier storedAltId : storedPs.getAlternativeIds()) {
+                if (storedAltId.getIdentifier() != null && !existingIdentifiers.contains(storedAltId.getIdentifier())) {
+                    psToCheck.getAlternativeIds().add(storedAltId);
+                    // Ajouter aussi dans ids pour la recherchabilité
+                    if (!psToCheck.getIds().contains(storedAltId.getIdentifier())) {
+                        psToCheck.getIds().add(storedAltId.getIdentifier());
+                    }
                 }
             }
         }
