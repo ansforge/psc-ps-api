@@ -271,7 +271,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                                 if (rppsPs.getAlternativeIds() != null) {
                                     for (fr.ans.psc.model.AlternativeIdentifier rppsAltId : rppsPs.getAlternativeIds()) {
                                         if (rppsAltId.getIdentifier() != null
-                                                && !existingAltIdIdentifiers.contains(rppsAltId.getIdentifier())) {
+                                                && !existingAltIdIdentifiers.contains(rppsAltId.getIdentifier())
+                                                && !ApiUtils.isValidUUID(rppsAltId.getIdentifier())) {
                                             ps.getAlternativeIds().add(rppsAltId);
                                             existingAltIdIdentifiers.add(rppsAltId.getIdentifier());
                                             if (!ps.getIds().contains(rppsAltId.getIdentifier())) {
