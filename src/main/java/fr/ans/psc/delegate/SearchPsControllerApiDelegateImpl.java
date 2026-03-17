@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import fr.ans.psc.api.SearchPsControllerApiDelegate;
 import fr.ans.psc.model.Ps;
+import fr.ans.psc.model.PsNameSearchResult;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -86,5 +87,52 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
 		   return new ResponseEntity<>(nationalIds, HttpStatus.OK);
 
 	}
-	
+
+	@Override
+	public ResponseEntity<List<PsNameSearchResult>> rechercherParNomPrenom(String lastName, String firstNames) {
+
+		log.debug("rechercherParNomPrenom lastName={} firstNames={}", lastName, firstNames);
+
+		Query query = new Query();
+
+		if (lastName != null && !lastName.isBlank()) {
+			query.addCriteria(Criteria.where("lastNameLower").is(lastName.toLowerCase()));
+		}
+
+		if (firstNames != null && !firstNames.isBlank()) {
+			List<String> firstNamesLower = Arrays.stream(firstNames.split(" "))
+					.map(String::toLowerCase)
+					.filter(s -> !s.isBlank())
+					.collect(Collectors.toList());
+			query.addCriteria(Criteria.where("firstNamesLowerArray").all(firstNamesLower));
+		}
+
+		List<Ps> pss = mongoTemplate.find(query, Ps.class);
+
+		List<PsNameSearchResult> results = pss.stream().map(ps -> {
+			List<String> companyNames = extractCompanyNames(ps);
+			return new PsNameSearchResult(ps.getNationalId(), companyNames);
+		}).collect(Collectors.toList());
+
+		return new ResponseEntity<>(results, HttpStatus.OK);
+	}
+
+	/**
+	 * Extrait les raisons sociales (legalCommercialName) depuis les structures
+	 * rattachées aux situations de travail du PS.
+	 */
+	private List<String> extractCompanyNames(Ps ps) {
+		if (ps.getProfessions() == null) {
+			return List.of();
+		}
+		return ps.getProfessions().stream()
+				.filter(p -> p.getWorkSituations() != null)
+				.flatMap(p -> p.getWorkSituations().stream())
+				.map(ws -> ws.getStructure())
+				.filter(s -> s != null && s.getLegalCommercialName() != null && !s.getLegalCommercialName().isBlank())
+				.map(s -> s.getLegalCommercialName())
+				.distinct()
+				.collect(Collectors.toList());
+	}
+
 }

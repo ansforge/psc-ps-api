@@ -536,8 +536,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'     
 
+  /v2/ps/search/name:
+    get:
+      tags:
+        - search-ps-controller
+      summary: Recherche un PS par nom et/ou prénom, retourne les ids nationaux et raisons sociales
+      operationId: rechercherParNomPrenom
+      parameters:
+        - name: lastName
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: firstNames
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste de PS trouvés avec leurs raisons sociales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PsNameSearchResult'
+        '400':
+          description: Données invalides ou absentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
+    PsNameSearchResult:
+      description: Résultat de recherche par nom/prénom
+      type: object
+      properties:
+        nationalId:
+          type: string
+        companyNames:
+          type: array
+          items:
+            type: string
     FirstName:
       description: First Name
       type: object
