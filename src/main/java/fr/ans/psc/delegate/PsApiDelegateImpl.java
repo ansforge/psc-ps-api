@@ -258,29 +258,19 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                     String altIdentifier = altId.getIdentifier();
                     if (altIdentifier != null && !altIdentifier.equals(ps.getNationalId())) {
                         try {
-                            // Search by nationalId, ids array, OR alternativeIds.identifier to catch CAB_RPPS
-                            Query refQuery = new Query(new org.springframework.data.mongodb.core.query.Criteria().orOperator(
-                                    Criteria.where("nationalId").is(altIdentifier),
-                                    Criteria.where("ids").in(altIdentifier),
-                                    Criteria.where("alternativeIds.identifier").is(altIdentifier)
-                            ));
-                            List<Ps> refPsList = mongoTemplate.find(refQuery, Ps.class);
-                            // Exclude the PSI fiche itself
-                            for (Ps rppsPs : refPsList) {
-                                if (rppsPs.getNationalId().equals(ps.getNationalId())) continue;
-                                if (rppsPs.getAlternativeIds() != null) {
-                                    for (fr.ans.psc.model.AlternativeIdentifier rppsAltId : rppsPs.getAlternativeIds()) {
-                                        if (rppsAltId.getIdentifier() != null
-                                                && !existingAltIdIdentifiers.contains(rppsAltId.getIdentifier())) {
-                                            ps.getAlternativeIds().add(rppsAltId);
-                                            existingAltIdIdentifiers.add(rppsAltId.getIdentifier());
-                                            if (!ps.getIds().contains(rppsAltId.getIdentifier())) {
-                                                ps.getIds().add(rppsAltId.getIdentifier());
-                                            }
-                                            log.info("Pre-merged alternativeId {} ({}) from fiche {} into PSI {}",
-                                                    rppsAltId.getIdentifier(), rppsAltId.getOrigine(),
-                                                    rppsPs.getNationalId(), ps.getNationalId());
+                            Ps rppsPs = psRepository.findByNationalId(altIdentifier);
+                            if (rppsPs != null && rppsPs.getAlternativeIds() != null) {
+                                for (fr.ans.psc.model.AlternativeIdentifier rppsAltId : rppsPs.getAlternativeIds()) {
+                                    if (rppsAltId.getIdentifier() != null
+                                            && !existingAltIdIdentifiers.contains(rppsAltId.getIdentifier())) {
+                                        ps.getAlternativeIds().add(rppsAltId);
+                                        existingAltIdIdentifiers.add(rppsAltId.getIdentifier());
+                                        if (!ps.getIds().contains(rppsAltId.getIdentifier())) {
+                                            ps.getIds().add(rppsAltId.getIdentifier());
                                         }
+                                        log.info("Pre-merged alternativeId {} ({}) from RPPS fiche {} into PSI {}",
+                                                rppsAltId.getIdentifier(), rppsAltId.getOrigine(),
+                                                altIdentifier, ps.getNationalId());
                                     }
                                 }
                             }
