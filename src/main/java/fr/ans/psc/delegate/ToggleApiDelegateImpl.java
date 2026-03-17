@@ -132,6 +132,10 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 				// CRITICAL FIX: Clean up orphaned oldPs if it still exists
 				if (oldPs != null && !oldPs.getNationalId().equals(targetPs.getNationalId())) {
 					log.warn("CLEANUP: Found orphaned PS {} that should have been deleted during fusion. Deleting now.", oldPs.getNationalId());
+					// Merge alternativeIds from oldPs before deleting it (e.g. CAB_RPPS identifiers)
+					ApiUtils.setAppropriateIds(targetPs, oldPs);
+					mongoTemplate.save(targetPs);
+					log.info("Merged alternativeIds from orphaned PS {} into {}", oldPs.getNationalId(), targetPs.getNationalId());
 					mongoTemplate.remove(oldPs);
 					log.info("Orphaned PS {} successfully removed", oldPs.getNationalId());
 					
