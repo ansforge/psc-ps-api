@@ -26,7 +26,7 @@
 	</parent>
 	<groupId>fr.ans.psc</groupId>
 	<artifactId>psc-api-maj-v2</artifactId>
-	<version>2.1.1</version>
+	<version>2.1.2-SNAPSHOT</version>
 	<name>psc-api-maj-v2</name>
 	<description>API for PS CRUD</description>
 	<inceptionYear>2022-2023</inceptionYear>
@@ -40,7 +40,7 @@
         
         <scm>
           <connection>scm:git:${project.basedir}</connection>
-          <tag>2.1.1</tag>
+          <tag>HEAD</tag>
         </scm>
 	<dependencies>
 		<dependency>
@@ -242,7 +242,7 @@
 								<modelPackage>fr.ans.psc.model</modelPackage>
 								<apiPackage>fr.ans.psc.api</apiPackage>
 								<sourceFolder>src/main/java</sourceFolder>
-								<dateLibrary>threetenbp</dateLibrary>
+								<dateLibrary>java8</dateLibrary>
 								<delegatePattern>true</delegatePattern>
 								<useBeanValidation>true</useBeanValidation>
 								<skipOverwrite>true</skipOverwrite>

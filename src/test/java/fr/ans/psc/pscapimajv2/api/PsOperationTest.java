@@ -15,32 +15,24 @@
  */
 package fr.ans.psc.pscapimajv2.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static org.assertj.core.api.Assertions.*;
+import java.util.List;
 
-import ch.qos.logback.classic.LoggerContext;
-import com.jupiter.tools.spring.test.mongo.annotation.ExpectedMongoDataSet;
-import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
-import fr.ans.psc.delegate.PsApiDelegateImpl;
-import fr.ans.psc.model.Ps;
-import fr.ans.psc.repository.PsRepository;
-import fr.ans.psc.utils.ApiUtils;
-import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -49,7 +41,17 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.List;
+import com.jupiter.tools.spring.test.mongo.annotation.ExpectedMongoDataSet;
+import com.jupiter.tools.spring.test.mongo.annotation.MongoDataSet;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import fr.ans.psc.delegate.PsApiDelegateImpl;
+import fr.ans.psc.model.Ps;
+import fr.ans.psc.pscapimajv2.utils.MemoryAppender;
+import fr.ans.psc.repository.PsRepository;
+import fr.ans.psc.utils.ApiUtils;
 
 public class PsOperationTest extends BaseOperationTest {
 
@@ -209,6 +211,73 @@ public class PsOperationTest extends BaseOperationTest {
                         "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000001\",\"nationalId\": \"800000000001\","+
                         "\"activated\": 1638791221}]}"))
                 .andExpect(status().is(201));
+        
+        ResultActions createdPs2 = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
+                .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000002\"," +"\"ids\":[\"800000000002\",\"855e8700-e29b-41d4-a716-44665544111\"],"+  
+                		"\"alternativeIds\":[{\"identifier\":\"800000000002\",\"origine\":\"RPPS\",\"quality\":1},{\"identifier\":\"855e8700-e29b-41d4-a716-44665544111\",\"origine\":\"PSI\",\"quality\":2}]," + "\"quality\":0," +
+                        "\"nationalId\":\"855e8700-e29b-41d4-a716-44665544111\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\"," +
+                        "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
+                        "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\"," +
+                        "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY\"," +
+                        "\"expertises\":[{\"expertiseId\":\"SSM69\",\"typeCode\":\"S\",\"code\":\"SM69\"}],\"workSituations\":[{\"situId\":\"SSA04\"," +
+                        "\"modeCode\":\"S\",\"activitySectorCode\":\"SA04\",\"pharmacistTableSectionCode\":\"AC36\",\"roleCode\":\"12\"," +
+                        "\"registrationAuthority\":\"ARS/ARS/ARS\",\"structure\":{\"siteSIRET\":\"125 137 196 15574\",\"siteSIREN\":\"125 137 196\"," +
+                        "\"siteFINESS\":null,\"legalEstablishmentFINESS\":null,\"structureTechnicalId\":\"1\"," +
+                        "\"legalCommercialName\":\"Structure One\",\"publicCommercialName\":\"Structure One\",\"recipientAdditionalInfo\":\"info +\"," +
+                        "\"geoLocationAdditionalInfo\":\"geoloc info +\",\"streetNumber\":\"1\",\"streetNumberRepetitionIndex\":\"bis\"," +
+                        "\"streetCategoryCode\":\"rue\",\"streetLabel\":\"Zorro\",\"distributionMention\":\"c/o Bernardo\",\"cedexOffice\":\"75117\"," +
+                        "\"postalCode\":\"75017\",\"communeCode\":\"75\",\"countryCode\":\"FR\",\"phone\":\"0123456789\",\"phone2\":\"0623456789\"," +
+                        "\"fax\":\"0198765432\",\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\"," +
+                        "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000002\",\"nationalId\": \"800000000002\","+
+                        "\"activated\": 1638791221}]}"))
+                .andExpect(status().is(201));
+        
+        assertThat(memoryAppender.contains("Ps 800000000001 successfully stored or updated", Level.INFO)).isTrue();
+        assertThat(memoryAppender.contains("PsRef 800000000001 has been reactivated", Level.INFO)).isFalse();
+
+        // Take the default value
+        Ps storedPs = psRepository.findByNationalId("800000000001");        
+        // assertTrue(storedPs.getAlternativeIds().isEmpty());
+        
+        // Overrides the default value
+        Ps storedPs2 = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
+        assertTrue(storedPs2.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 1 && "800000000002".equals(id.getIdentifier()) && "RPPS".equals(id.getOrigine() )));
+        assertTrue(storedPs2.getAlternativeIds().stream().anyMatch(id -> id.getQuality() == 2 && "855e8700-e29b-41d4-a716-44665544111".equals(id.getIdentifier()) && "PSI".equals(id.getOrigine() )));
+        
+        String psAsJsonString = objectWriter.writeValueAsString(storedPs);
+        System.out.println("---------------  RESULT  -------------");
+        System.out.println(psAsJsonString);
+        
+        psAsJsonString = objectWriter.writeValueAsString(storedPs2);
+        System.out.println("---------------  RESULT  -------------");
+        System.out.println(psAsJsonString);
+
+        createdPs.andDo(document("PsOperationTest/create_new_Ps"));
+    }
+
+    @Test
+    @DisplayName(value = "should create a brand new Ps")
+    public void createNewPsFromPSI() throws Exception {
+
+        ResultActions createdPs = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
+                .contentType("application/json")
+                .content("{\"idType\":\"8\",\"id\":\"00000000001\","
+                        + "\"nationalId\":\"800000000001\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\","
+                        + "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\","
+                        + "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\","
+                        + "\"code\":\"50\",\"categoryCode\":\"C\",\"salutationCode\":\"M\",\"lastName\":\"DUPONT\",\"firstName\":\"JIMMY\","
+                        + "\"expertises\":[{\"expertiseId\":\"SSM69\",\"typeCode\":\"S\",\"code\":\"SM69\"}],\"workSituations\":[{\"situId\":\"SSA04\","
+                        + "\"modeCode\":\"S\",\"activitySectorCode\":\"SA04\",\"pharmacistTableSectionCode\":\"AC36\",\"roleCode\":\"12\","
+                        + "\"registrationAuthority\":\"ARS/ARS/ARS\",\"structure\":{\"siteSIRET\":\"125 137 196 15574\",\"siteSIREN\":\"125 137 196\","
+                        + "\"siteFINESS\":null,\"legalEstablishmentFINESS\":null,\"structureTechnicalId\":\"1\","
+                        + "\"legalCommercialName\":\"Structure One\",\"publicCommercialName\":\"Structure One\",\"recipientAdditionalInfo\":\"info +\","
+                        + "\"geoLocationAdditionalInfo\":\"geoloc info +\",\"streetNumber\":\"1\",\"streetNumberRepetitionIndex\":\"bis\","
+                        + "\"streetCategoryCode\":\"rue\",\"streetLabel\":\"Zorro\",\"distributionMention\":\"c/o Bernardo\",\"cedexOffice\":\"75117\","
+                        + "\"postalCode\":\"75017\",\"communeCode\":\"75\",\"countryCode\":\"FR\",\"phone\":\"0123456789\",\"phone2\":\"0623456789\","
+                        + "\"fax\":\"0198765432\",\"email\":\"structure@one.fr\",\"departmentCode\":\"99\",\"oldStructureId\":\"101\","
+                        + "\"registrationAuthority\":\"CIA\"}}]}],\"psRefs\":[{\"nationalIdRef\": \"800000000001\",\"nationalId\": \"800000000001\","
+                        + "\"activated\": 1638791221}]}"))
+                .andExpect(status().is(201));
         assertThat(memoryAppender.contains("Ps 800000000001 successfully stored or updated", Level.INFO)).isTrue();
         assertThat(memoryAppender.contains("PsRef 800000000001 has been reactivated", Level.INFO)).isFalse();
 
@@ -312,6 +381,139 @@ public class PsOperationTest extends BaseOperationTest {
 
         assertThat(memoryAppender.contains("No Ps found with nationalId 800000000003, will not be deleted", Level.WARN)).isTrue();
         assertThat(memoryAppender.contains("Ps 800000000003 successfully deleted", Level.INFO)).isFalse();
+    }
+ 
+    @Test
+    @DisplayName(value = "Search a PS by identity")
+    @MongoDataSet(value = "/dataset/ps_search_by_identity.json", cleanBefore = true, cleanAfter = true)
+    public void searchPs() throws Exception {
+    	
+    	// Only required criterias (and only one firstName)
+    	ResultActions result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+        )
+        .andExpect(status().is(200));
+    	String responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001") && responseBody.contains("800000000002"));
+ 
+        // Only required criterias (and all firstnames)
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // Only required criterias + birthCountryCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // Only required criterias + birthCountryCode + birthAddressCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthTownCode","57463")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // All criterias (+ optionals birthCountryCode, birthAddressCode, birthAddress)
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthTownCode","57463")
+                .param("birthplace","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertTrue(responseBody.contains("800000000001"));
+        
+        // All criterias, fake firstname
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB TOTO")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthTownCode","57463")
+                .param("birthplace","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+        assertEquals("[]", responseBody);
+        
+        // All criterias, fake birthCountryCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99001")
+                .param("birthTownCode","57463")
+                .param("birthplace","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+    	assertEquals("[]", responseBody);
+    	
+        // All criterias, fake birthCountryCode
+    	result = mockMvc.perform(
+    	        get("/api/v2/ps/search")
+                .header("Accept", "application/json")
+                .param("lastName", "DUPONT")
+                .param("firstNames", "JIMMY BOB")
+                .param("genderCode", "M")
+                .param("birthdate", "1983-12-17")
+                .param("birthCountryCode","99000")
+                .param("birthTownCode","57464")
+                .param("birthplace","METZ")
+        )
+        .andExpect(status().is(200));
+    	responseBody = result.andReturn().getResponse().getContentAsString();
+
+    	assertEquals("[]", responseBody);
     }
 
     @Test
@@ -434,5 +636,53 @@ public class PsOperationTest extends BaseOperationTest {
 
         assertEquals(psRefCount, 1);
         assertEquals(psRepository.count(), 1);
+    }
+
+    @Test
+    @DisplayName(value = "should update Ps and merge RPPS professional information in the PS")
+    @MongoDataSet(value = "/dataset/updatePSIAndMerge_RPPS_example.json", cleanBefore = true, cleanAfter = true)
+    public void updatePsAndMerge() throws Exception {
+
+
+        ResultActions updatedPs = mockMvc
+                .perform(put("/api/v2/ps").param("extraId", "800000000001").header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content("{\n" + "\"idType\": \"8\",\n" + "\"id\": \"855e8700-e29b-41d4-a716-44665544111\",\n"
+                                + "\"lastName\": \"MUNOZ\",\n"
+                                + "\"nationalId\": \"855e8700-e29b-41d4-a716-44665544111\"\n" + "}"))
+                .andExpect(status().is(200));
+
+        Ps finalPs = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
+
+        assertTrue(finalPs.getIds().contains("855e8700-e29b-41d4-a716-44665544111"));
+        assertTrue(finalPs.getIds().contains("800000000001"));
+        assertTrue("MUNOZ".equals(finalPs.getLastName()));
+        assertTrue("".equals(finalPs.getIdType()));
+        assertTrue("12".equals(finalPs.getProfessions().get(0).getCode()));
+
+        updatedPs.andDo(document("PsOperationTest/update_Ps"));
+    }
+
+    @Test
+    @DisplayName(value = "should update Psi with new Psi informations")
+    @MongoDataSet(value = "/dataset/updatePsiWithSamePsiExtraId.json", cleanBefore = true, cleanAfter = true)
+    public void updatePsiWithSamePsiExtraId() throws Exception {
+
+        ResultActions updatedPs = mockMvc
+                .perform(put("/api/v2/ps").param("extraId", "855e8700-e29b-41d4-a716-44665544111")
+                        .header("Accept", "application/json").contentType("application/json")
+                        .content("{\n" + "\"idType\": \"10\",\n" + "\"id\": \"855e8700-e29b-41d4-a716-44665544111\",\n"
+                                + "\"lastName\": \"toto\",\n"
+                                + "\"nationalId\": \"855e8700-e29b-41d4-a716-44665544111\"\n" + "}"))
+                .andExpect(status().is(200));
+
+        Ps finalPs = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
+
+        assertTrue(finalPs.getIds().contains("855e8700-e29b-41d4-a716-44665544111"));
+        assertTrue("toto".equals(finalPs.getLastName()));
+        assertTrue("10".equals(finalPs.getIdType()));
+        assertTrue("EVRARD".equals(finalPs.getProfessions().get(0).getLastName()));
+
+        updatedPs.andDo(document("PsOperationTest/update_Ps"));
     }
 }

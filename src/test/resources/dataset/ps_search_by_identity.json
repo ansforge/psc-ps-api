@@ -1,0 +1,158 @@
+{
+  "fr.ans.psc.model.Ps": [
+    {
+      "idType": "8",
+      "id": "00000000001",
+      "nationalId": "800000000001",
+      "lastName": "DUPONT",
+      "firstNames": [{
+        "firstName":"JIMMY",
+        "order": 1
+      },{
+        "firstName":"BOB",
+        "order": 2
+      }
+      ],
+      "dateOfBirth": "17/12/1983",
+      "birthAddressCode": "57463",
+      "birthCountryCode": "99000",
+      "birthAddress": "METZ",
+      "genderCode": "M",
+      "phone": "0601020304",
+      "email": "jimmy@dupont.fr",
+      "salutationCode": "M",
+      "professions": [
+        {
+          "exProId": "50C",
+          "code": "50",
+          "categoryCode": "C",
+          "salutationCode": "M",
+          "lastName": "DUPONT",
+          "firstName":"JIMMY",
+          "expertises": [
+            {
+              "expertiseId": "SSM69",
+              "typeCode": "S",
+              "code": "SM69"
+            }
+          ],
+          "workSituations": [
+            {
+              "situId": "SSA04",
+              "modeCode": "S",
+              "activitySectorCode": "SA04",
+              "pharmacistTableSectionCode": "AC36",
+              "roleCode": "12",
+              "structure": {
+                "siteSIRET": "125 137 196 15574",
+                "siteSIREN": "125 137 196",
+                "siteFINESS": null,
+                "legalEstablishmentFINESS": null,
+                "structureTechnicalId": "1",
+                "legalCommercialName": "Structure One",
+                "publicCommercialName": "Structure One",
+                "recipientAdditionalInfo": "info +",
+                "geoLocationAdditionalInfo": "geoloc info +",
+                "streetNumber": "1",
+                "streetNumberRepetitionIndex": "bis",
+                "streetCategoryCode": "rue",
+                "streetLabel": "Zorro",
+                "distributionMention": "c/o Bernardo",
+                "cedexOffice": "75117",
+                "postalCode": "75017",
+                "communeCode": "75",
+                "countryCode": "FR",
+                "phone": "0123456789",
+                "phone2": "0623456789",
+                "fax": "0198765432",
+                "email": "structure@one.fr",
+                "departmentCode": "99",
+                "oldStructureId": "101"
+              }
+            }
+          ]
+        }
+      ],
+      "activated": 1638791225,
+      "ids": [
+          "800000000001",
+          "800000000011"
+      ]
+    },{
+      "idType": "8",
+      "id": "00000000002",
+      "nationalId": "800000000002",
+      "lastName": "DUPONT",
+      "firstNames": [{
+        "firstName":"JIMMY",
+        "order": 1
+      }
+      ],
+      "dateOfBirth": "17/12/1983",
+      "birthAddressCode": "57463",
+      "birthCountryCode": "99000",
+      "birthAddress": "METZ",
+      "genderCode": "M",
+      "phone": "0601020304",
+      "email": "jimmy@dupont.fr",
+      "salutationCode": "M",
+      "professions": [
+        {
+          "exProId": "50C",
+          "code": "50",
+          "categoryCode": "C",
+          "salutationCode": "M",
+          "lastName": "DUPONT",
+          "firstName":"JIMMY",
+          "expertises": [
+            {
+              "expertiseId": "SSM69",
+              "typeCode": "S",
+              "code": "SM69"
+            }
+          ],
+          "workSituations": [
+            {
+              "situId": "SSA04",
+              "modeCode": "S",
+              "activitySectorCode": "SA04",
+              "pharmacistTableSectionCode": "AC36",
+              "roleCode": "12",
+              "structure": {
+                "siteSIRET": "125 137 196 15574",
+                "siteSIREN": "125 137 196",
+                "siteFINESS": null,
+                "legalEstablishmentFINESS": null,
+                "structureTechnicalId": "1",
+                "legalCommercialName": "Structure One",
+                "publicCommercialName": "Structure One",
+                "recipientAdditionalInfo": "info +",
+                "geoLocationAdditionalInfo": "geoloc info +",
+                "streetNumber": "1",
+                "streetNumberRepetitionIndex": "bis",
+                "streetCategoryCode": "rue",
+                "streetLabel": "Zorro",
+                "distributionMention": "c/o Bernardo",
+                "cedexOffice": "75117",
+                "postalCode": "75017",
+                "communeCode": "75",
+                "countryCode": "FR",
+                "phone": "0123456789",
+                "phone2": "0623456789",
+                "fax": "0198765432",
+                "email": "structure@one.fr",
+                "departmentCode": "99",
+                "oldStructureId": "101"
+              }
+            }
+          ]
+        }
+      ],
+      "activated": 1638791225,
+      "ids": [
+          "800000000001",
+          "800000000011"
+      ]
+    }
+  ]
+}
