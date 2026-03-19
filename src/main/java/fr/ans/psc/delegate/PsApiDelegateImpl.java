@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     private final PsRepository psRepository;
     private final MongoTemplate mongoTemplate;
     private final ToggleApiDelegateImpl toggleApiDelegateImpl;
+
+    @Value("${force.delete.enabled:false}")
+    private boolean forceDeleteEnabled;
 
     public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate,
             ToggleApiDelegateImpl toggleApiDelegateImpl) {
@@ -366,6 +370,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
     @Override
     public ResponseEntity<Void> forceDeletePsById(String encodedPsId) {
+        if (!forceDeleteEnabled) {
+            log.warn("Force delete is disabled");
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         Ps ps = psRepository.findByNationalId(psId);
 
