@@ -241,6 +241,14 @@ paths:
       tags:
         - ps
       operationId: get-ps-by-id
+      parameters:
+        - name: includeDeactivated
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Si true, retourne le PS même s'il est désactivé
       responses:
         '200':
           description: OK

@@ -19,7 +19,9 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -49,6 +52,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     private final MongoTemplate mongoTemplate;
     private final ToggleApiDelegateImpl toggleApiDelegateImpl;
 
+    @Value("${force.delete.enabled:false}")
+    private boolean forceDeleteEnabled;
+
     public PsApiDelegateImpl(PsRepository psRepository, MongoTemplate mongoTemplate,
             ToggleApiDelegateImpl toggleApiDelegateImpl) {
         this.psRepository = psRepository;
@@ -57,7 +63,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Ps> getPsById(String encodedPsId) {
+    public ResponseEntity<Ps> getPsById(String encodedPsId, Boolean includeDeactivated) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         String operationLog;
         Ps ps;
@@ -100,9 +106,13 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         }
         // check if Ps is activated
         if (!ApiUtils.isPsActivated(ps)) {
-            operationLog = "Ps {} is deactivated";
-            log.warn(operationLog, psId);
-            return new ResponseEntity<>(HttpStatus.GONE);
+            if (Boolean.TRUE.equals(includeDeactivated)) {
+                log.info("Ps {} is deactivated but includeDeactivated=true, returning it", psId);
+            } else {
+                operationLog = "Ps {} is deactivated";
+                log.warn(operationLog, psId);
+                return new ResponseEntity<>(HttpStatus.GONE);
+            }
         }
         log.info("Ps {} has been found", ps.getNationalId());
 
@@ -244,6 +254,41 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                 }
             }
             
+            // For UUID-based PS (PSI): before saving, fetch and merge alternativeIds from
+            // referenced RPPS fiches (e.g. CAB_RPPS identifiers). This ensures they are
+            // preserved even when togglePsref takes the "already done" fast-path.
+            if (ApiUtils.isValidUUID(ps.getNationalId()) && ps.getAlternativeIds() != null) {
+                Set<String> existingAltIdIdentifiers = new HashSet<>();
+                for (fr.ans.psc.model.AlternativeIdentifier a : ps.getAlternativeIds()) {
+                    if (a.getIdentifier() != null) existingAltIdIdentifiers.add(a.getIdentifier());
+                }
+                for (fr.ans.psc.model.AlternativeIdentifier altId : new ArrayList<>(ps.getAlternativeIds())) {
+                    String altIdentifier = altId.getIdentifier();
+                    if (altIdentifier != null && !altIdentifier.equals(ps.getNationalId())) {
+                        try {
+                            Ps rppsPs = psRepository.findByNationalId(altIdentifier);
+                            if (rppsPs != null && rppsPs.getAlternativeIds() != null) {
+                                for (fr.ans.psc.model.AlternativeIdentifier rppsAltId : rppsPs.getAlternativeIds()) {
+                                    if (rppsAltId.getIdentifier() != null
+                                            && !existingAltIdIdentifiers.contains(rppsAltId.getIdentifier())) {
+                                        ps.getAlternativeIds().add(rppsAltId);
+                                        existingAltIdIdentifiers.add(rppsAltId.getIdentifier());
+                                        if (!ps.getIds().contains(rppsAltId.getIdentifier())) {
+                                            ps.getIds().add(rppsAltId.getIdentifier());
+                                        }
+                                        log.info("Pre-merged alternativeId {} ({}) from RPPS fiche {} into PSI {}",
+                                                rppsAltId.getIdentifier(), rppsAltId.getOrigine(),
+                                                altIdentifier, ps.getNationalId());
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            log.warn("Could not pre-merge alternativeIds from {}: {}", altIdentifier, e.getMessage());
+                        }
+                    }
+                }
+            }
+
             ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
             
@@ -329,6 +374,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
 
     @Override
     public ResponseEntity<Void> forceDeletePsById(String encodedPsId) {
+        if (!forceDeleteEnabled) {
+            log.warn("Force delete is disabled");
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         Ps ps = psRepository.findByNationalId(psId);
 
