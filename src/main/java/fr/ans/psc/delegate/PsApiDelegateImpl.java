@@ -63,7 +63,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Ps> getPsById(String encodedPsId) {
+    public ResponseEntity<Ps> getPsById(String encodedPsId, Boolean includeDeactivated) {
         String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
         String operationLog;
         Ps ps;
@@ -106,9 +106,13 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         }
         // check if Ps is activated
         if (!ApiUtils.isPsActivated(ps)) {
-            operationLog = "Ps {} is deactivated";
-            log.warn(operationLog, psId);
-            return new ResponseEntity<>(HttpStatus.GONE);
+            if (Boolean.TRUE.equals(includeDeactivated)) {
+                log.info("Ps {} is deactivated but includeDeactivated=true, returning it", psId);
+            } else {
+                operationLog = "Ps {} is deactivated";
+                log.warn(operationLog, psId);
+                return new ResponseEntity<>(HttpStatus.GONE);
+            }
         }
         log.info("Ps {} has been found", ps.getNationalId());
 
