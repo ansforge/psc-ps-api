@@ -137,6 +137,13 @@ paths:
     put:
       summary: Update Ps
       operationId: update-ps
+      parameters:
+       - name: extraId
+         in: query
+         description: Optional id
+         required: false
+         schema:
+           type: string
       responses:
         '200':
           description: OK
@@ -222,7 +229,7 @@ paths:
         required: true
       tags:
         - ps
-  '/v2/ps/{psId}':
+  '/v2/ps/{psId:.+}':
     parameters:
       - schema:
           type: string
@@ -234,6 +241,14 @@ paths:
       tags:
         - ps
       operationId: get-ps-by-id
+      parameters:
+        - name: includeDeactivated
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Si true, retourne le PS même s'il est désactivé
       responses:
         '200':
           description: OK
@@ -327,7 +342,7 @@ paths:
         '410':
           description: Not Found
       description: Delete a PS by its id
-  '/v2/ps/force/{psId}':
+  '/v2/ps/force/{psId:.+}':
     parameters:
       - schema:
           type: string
@@ -446,9 +461,140 @@ paths:
         required: true
       tags:
         - toggle
+  /v2/ps/search:
+    get:
+      tags:
+        - search-ps-controller
+      summary: Retourne l'id national de chaque personne trouvée sur la base des traits d'identité
+      operationId: rechercherNationalIdParTraitsIdentite
+      parameters:
+        - name: lastName
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: firstNames
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: genderCode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: birthdate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: birthTownCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: birthCountryCode
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: birthplace
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Au moins une personne a été trouvé, retourne donc un tableau d'id
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Données invalides ou absentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Utilisateur non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: Conflits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'     
+
+  /v2/ps/search/name:
+    get:
+      tags:
+        - search-ps-controller
+      summary: Recherche un PS par nom et/ou prénom, retourne les ids nationaux et raisons sociales
+      operationId: rechercherParNomPrenom
+      parameters:
+        - name: lastName
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: firstNames
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste de PS trouvés avec leurs raisons sociales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PsNameSearchResult'
+        '400':
+          description: Données invalides ou absentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
+    PsNameSearchResult:
+      description: Résultat de recherche par nom/prénom
+      type: object
+      properties:
+        nationalId:
+          type: string
+        companyNames:
+          type: array
+          items:
+            type: string
     FirstName:
       description: First Name
       type: object

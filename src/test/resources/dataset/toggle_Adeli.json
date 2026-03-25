@@ -1,0 +1,130 @@
+{
+  "fr.ans.psc.model.Ps": [
+     {
+    "_id": "01",
+    "idType": "0",
+    "id": "000327008728",
+    "nationalId": "000327008728",
+    "lastName": "GERMAIN",
+    "firstNames": [
+      {
+        "firstName": "David",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "15/10/1980",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "Male",
+    "phone": "0123445789",
+    "email": "adeli@gmail.com",
+    "salutationCode": "M",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "200",
+        "categoryCode": "C",
+        "salutationCode": "",
+        "lastName": "GERMAIN",
+        "firstName": "David",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": ""
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "L",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "000327008728"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  },
+           {
+    "_id": "02",
+    "idType": "0",
+    "id": "538052778800034/8165",
+    "nationalId": "538052778800034/8165",
+    "lastName": "GERMAIN",
+    "firstNames": [
+      {
+        "firstName": "David",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "15/10/1980",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "Male",
+    "phone": "0596788945",
+    "email": "notadeli@gmail.com",
+    "salutationCode": "M",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "400",
+        "categoryCode": "C",
+        "salutationCode": "",
+        "lastName": "GERMAIN",
+        "firstName": "David",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": ""
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "L",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "538052778800034/8165"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  }
+  ]
+}

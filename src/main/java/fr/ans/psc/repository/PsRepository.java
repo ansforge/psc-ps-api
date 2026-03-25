@@ -15,18 +15,20 @@
  */
 package fr.ans.psc.repository;
 
-import fr.ans.psc.model.Ps;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import fr.ans.psc.model.Ps;
+
 @Repository
 public interface PsRepository extends MongoRepository<Ps, String> {
 
-    Ps findByNationalId(String nationalId);
+	Ps findByNationalId(String nationalId);
 
-    Ps findByIdsContaining(String id);
+	Ps findByIdsContaining(String id);
 
-    Page<Ps> findAll(Pageable pageable);
+	Page<Ps> findAll(Pageable pageable);
+
 }

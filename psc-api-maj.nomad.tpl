@@ -93,6 +93,8 @@ spring.data.mongodb.database=mongodb
 spring.data.mongodb.password={{ .Data.data.root_pass }}{{ end }}
 spring.data.mongodb.auto-index-creation=false
 {{ with secret "psc-ecosystem/${nomad_namespace}/admin" }}logging.level.fr.ans.psc={{ .Data.data.log_level }}{{ end }}
+# Enable force delete (configurable via Vault secret force_delete_enabled)
+{{ with secret "psc-ecosystem/${nomad_namespace}/psc-secpsc-api" }}force.delete.enabled={{ if .Data.data.force_delete_enabled }}{{ .Data.data.force_delete_enabled }}{{ else }}false{{ end }}{{ end }}
 EOF
         destination = "secrets/application.properties"
         change_mode = "restart"

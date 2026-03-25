@@ -1,0 +1,130 @@
+{
+  "fr.ans.psc.model.Ps": [
+     {
+    "_id": "01",
+    "idType": "0",
+    "id": "4380527788/8165",
+    "nationalId": "4380527788/8165",
+    "lastName": "GERMAIN",
+    "firstNames": [
+      {
+        "firstName": "David",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "15/10/1980",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "Male",
+    "phone": "",
+    "email": "",
+    "salutationCode": "M",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "28",
+        "categoryCode": "C",
+        "salutationCode": "",
+        "lastName": "EVRARD",
+        "firstName": "Bernadette",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": ""
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "L",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "4380527788/8165"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  },
+      {
+    "_id": "02",
+    "idType": "0",
+    "id": "811234567896",
+    "nationalId": "811234567896",
+    "lastName": "DUPONT",
+    "firstNames": [
+      {
+        "firstName": "David",
+        "order": 0
+      },
+      {
+        "firstName": "",
+        "order": 1
+      },
+      {
+        "firstName": "",
+        "order": 2
+      }
+    ],
+    "dateOfBirth": "15/12/1990",
+    "birthAddressCode": "",
+    "birthCountryCode": "",
+    "birthAddress": "",
+    "genderCode": "X",
+    "phone": "",
+    "email": "",
+    "salutationCode": "M",
+    "professions": [
+      {
+        "exProId": null,
+        "code": "28",
+        "categoryCode": "A",
+        "salutationCode": "",
+        "lastName": "DUPONT",
+        "firstName": "David",
+        "expertises": [
+          {
+            "expertiseId": null,
+            "typeCode": "",
+            "code": ""
+          }
+        ],
+        "workSituations": [
+          {
+            "situId": null,
+            "modeCode": "L",
+            "activitySectorCode": "",
+            "pharmacistTableSectionCode": "",
+            "roleCode": "",
+            "activityKindCode": "",
+            "registrationAuthority": "",
+            "structure": null
+          }
+        ]
+      }
+    ],
+    "ids": [
+      "811234567896"
+    ],
+    "activated": 1663176377,
+    "deactivated": null
+  }
+  ]
+}
