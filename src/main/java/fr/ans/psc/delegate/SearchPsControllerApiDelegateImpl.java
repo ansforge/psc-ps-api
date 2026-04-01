@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,8 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.ans.psc.api.SearchPsControllerApiDelegate;
+import fr.ans.psc.model.Profession;
 import fr.ans.psc.model.Ps;
-import fr.ans.psc.model.PsNameSearchResult;
+import fr.ans.psc.model.PsSearchResult;
+import fr.ans.psc.model.WorkLocation;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -30,21 +31,6 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
     }
 	
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-	/**
-	 * Crée un Pattern regex pour recherche insensible à la casse
-	 * 
-	 * @param text Texte à rechercher
-	 * @return Pattern regex case-insensitive
-	 */
-	private Pattern createCaseInsensitivePattern(String text) {
-		if (text == null) {
-			return null;
-		}
-		// Échappe les caractères spéciaux regex et crée un pattern case-insensitive
-		String escapedText = Pattern.quote(text);
-		return Pattern.compile("^" + escapedText + "$", Pattern.CASE_INSENSITIVE);
-	}
 
 	@Override
 	public ResponseEntity<List<String>> rechercherNationalIdParTraitsIdentite(String lastName, String firstNames,
@@ -81,22 +67,26 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         }
 
         List<Ps> pss = mongoTemplate.find(query, Ps.class);
-        
 
 		List<String> nationalIds = pss.stream().map(Ps::getNationalId).collect(Collectors.toList());
-		   return new ResponseEntity<>(nationalIds, HttpStatus.OK);
+		return new ResponseEntity<>(nationalIds, HttpStatus.OK);
 
 	}
 
 	@Override
-	public ResponseEntity<List<PsNameSearchResult>> rechercherParNomPrenom(String lastName, String firstNames) {
+	public ResponseEntity<List<PsSearchResult>> rechercherParNomPrenom(String lastName, String firstNames) {
 
 		log.debug("rechercherParNomPrenom lastName={} firstNames={}", lastName, firstNames);
 
 		Query query = new Query();
 
 		if (lastName != null && !lastName.isBlank()) {
-			query.addCriteria(Criteria.where("lastNameLower").is(lastName.toLowerCase()));
+			String lastNameLower = lastName.toLowerCase();
+			Criteria lastNameCriteria = new Criteria().orOperator(
+					Criteria.where("lastNameLower").is(lastNameLower),
+					Criteria.where("professions.lastNameLower").is(lastNameLower)
+			);
+			query.addCriteria(lastNameCriteria);
 		}
 
 		if (firstNames != null && !firstNames.isBlank()) {
@@ -109,29 +99,28 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
 
 		List<Ps> pss = mongoTemplate.find(query, Ps.class);
 
-		List<PsNameSearchResult> results = pss.stream().map(ps -> {
-			List<String> companyNames = extractCompanyNames(ps);
-			return new PsNameSearchResult(ps.getNationalId(), companyNames);
+		List<PsSearchResult> results = pss.stream().map(ps -> {
+			Profession firstProfession = (ps.getProfessions() != null && !ps.getProfessions().isEmpty())
+					? ps.getProfessions().get(0) : null;
+			String professionCode = firstProfession != null ? firstProfession.getCode() : null;
+			List<WorkLocation> workLocations = extractWorkLocations(firstProfession);
+			return new PsSearchResult(ps.getNationalId(), professionCode, workLocations);
 		}).collect(Collectors.toList());
 
 		return new ResponseEntity<>(results, HttpStatus.OK);
 	}
 
 	/**
-	 * Extrait les raisons sociales (legalCommercialName) depuis les structures
-	 * rattachées aux situations de travail du PS.
+	 * Extrait les lieux d'exercice (raison sociale + cedex) depuis la première profession du PS.
 	 */
-	private List<String> extractCompanyNames(Ps ps) {
-		if (ps.getProfessions() == null) {
+	private List<WorkLocation> extractWorkLocations(Profession profession) {
+		if (profession == null || profession.getWorkSituations() == null) {
 			return List.of();
 		}
-		return ps.getProfessions().stream()
-				.filter(p -> p.getWorkSituations() != null)
-				.flatMap(p -> p.getWorkSituations().stream())
+		return profession.getWorkSituations().stream()
 				.map(ws -> ws.getStructure())
-				.filter(s -> s != null && s.getLegalCommercialName() != null && !s.getLegalCommercialName().isBlank())
-				.map(s -> s.getLegalCommercialName())
-				.distinct()
+				.filter(s -> s != null)
+				.map(s -> new WorkLocation(s.getLegalCommercialName(), s.getCedexOffice()))
 				.collect(Collectors.toList());
 	}
 
