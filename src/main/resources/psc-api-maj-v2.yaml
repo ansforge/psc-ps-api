@@ -563,13 +563,13 @@ paths:
             type: string
       responses:
         '200':
-          description: Liste de PS trouvés avec leurs raisons sociales
+          description: Liste de PS trouvés avec leur code profession et lieux d'exercice
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PsNameSearchResult'
+                  $ref: '#/components/schemas/PsSearchResult'
         '400':
           description: Données invalides ou absentes
           content:
@@ -585,16 +585,26 @@ paths:
 
 components:
   schemas:
-    PsNameSearchResult:
-      description: Résultat de recherche par nom/prénom
+    PsSearchResult:
+      description: Résultat de recherche par traits d'identité
       type: object
       properties:
         nationalId:
           type: string
-        companyNames:
+        professionCode:
+          type: string
+        workLocations:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/WorkLocation'
+    WorkLocation:
+      description: Lieu d'exercice
+      type: object
+      properties:
+        companyName:
+          type: string
+        companyCedexOffice:
+          type: string
     FirstName:
       description: First Name
       type: object

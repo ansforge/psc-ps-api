@@ -43,6 +43,8 @@ public class Profession implements Cloneable{
   @JsonProperty("lastName")
   private String lastName;
 
+  private String lastNameLower;
+
   @JsonProperty("firstName")
   private String firstName;
 
@@ -131,6 +133,15 @@ public class Profession implements Cloneable{
 
   public void setLastName(String lastName) {
     this.lastName = lastName;
+    this.lastNameLower = lastName != null ? lastName.toLowerCase() : null;
+  }
+
+  public String getLastNameLower() {
+    return lastNameLower;
+  }
+
+  public void setLastNameLower(String lastNameLower) {
+    this.lastNameLower = lastNameLower;
   }
 
   /**
