@@ -193,8 +193,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         
         if (storedPs != null) {
             if (!ApiUtils.isPsActivated(storedPs)) {
-                log.warn("Ps {} is deactivated, can not update it", ps.getNationalId());
-                return new ResponseEntity<>(HttpStatus.GONE);
+                log.info("Ps {} is deactivated, reactivating it before update", ps.getNationalId());
+                storedPs.setActivated(ApiUtils.getInstantTimestamp());
+                storedPs.setDeactivated(null);
             }
             // set technical id then update
             ps.set_id(storedPs.get_id());

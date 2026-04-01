@@ -1,5 +1,15 @@
 # Changelog — psc-ps-api
 
+## [2026-04-02]
+
+### Modifié
+
+#### `PUT /v2/ps` (`updatePs`)
+- Un compte désactivé n'est plus rejeté avec 410 GONE lors d'un PUT
+- Le compte est désormais automatiquement réactivé (`activated = now`, `deactivated = null`) avant d'appliquer la mise à jour
+
+---
+
 ## [2026-04-01]
 
 ### Modifié
