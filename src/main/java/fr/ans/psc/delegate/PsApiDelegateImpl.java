@@ -142,8 +142,59 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         if (storedPs != null) {
             // DON'T UPDATE IF ALREADY ACTIVATED
             if (ApiUtils.isPsActivated(storedPs)) {
+                // If the stored PS is a PSI (UUID) and the incoming is a non-PSI identifier (RPPS/ADELI/SIRET),
+                // do a partial update: replace only the professions from this source identifier
+                if (ApiUtils.isValidUUID(storedPs.getNationalId()) && !ApiUtils.isValidUUID(ps.getNationalId())) {
+                    final String incomingId = ps.getNationalId();
+                    // Tag incoming professions with sourceId before comparison
+                    if (ps.getProfessions() != null) {
+                        ps.getProfessions().forEach(p -> p.setSourceId(incomingId));
+                    }
+                    // Skip save if professions for this source haven't changed
+                    if (storedPs.getProfessions() != null) {
+                        List<Profession> existingForSource = storedPs.getProfessions().stream()
+                                .filter(p -> incomingId.equals(p.getSourceId()))
+                                .collect(java.util.stream.Collectors.toList());
+                        if (ps.getProfessions() != null && existingForSource.equals(ps.getProfessions())) {
+                            log.info("Professions for source {} in PSI {} unchanged, skipping save", incomingId, storedPs.getNationalId());
+                            return new ResponseEntity<>(HttpStatus.OK);
+                        }
+                    }
+                    log.info("Partial update: replacing professions for source {} in PSI {}", incomingId, storedPs.getNationalId());
+                    if (storedPs.getProfessions() != null) {
+                        storedPs.getProfessions().removeIf(p -> incomingId.equals(p.getSourceId()));
+                    } else {
+                        storedPs.setProfessions(new ArrayList<>());
+                    }
+                    if (ps.getProfessions() != null) {
+                        storedPs.getProfessions().addAll(ps.getProfessions());
+                    }
+                    mongoTemplate.save(storedPs);
+                    log.info("Partial update for source {} in PSI {} completed", incomingId, storedPs.getNationalId());
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
                 log.warn("Ps {} already exists and is activated, will not be updated", ps.getNationalId());
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+            // If storedPs is a DEACTIVATED PSI and incoming is a non-UUID source (RPPS/ADELI/SIRET),
+            // do partial update on professions WITHOUT reactivating
+            if (!ApiUtils.isPsActivated(storedPs)
+                    && ApiUtils.isValidUUID(storedPs.getNationalId())
+                    && !ApiUtils.isValidUUID(ps.getNationalId())) {
+                final String incomingId = ps.getNationalId();
+                log.info("Partial update on DEACTIVATED PSI: updating professions for source {} in PSI {} without reactivating",
+                        incomingId, storedPs.getNationalId());
+                if (storedPs.getProfessions() != null) {
+                    storedPs.getProfessions().removeIf(p -> incomingId.equals(p.getSourceId()));
+                } else {
+                    storedPs.setProfessions(new ArrayList<>());
+                }
+                if (ps.getProfessions() != null) {
+                    ps.getProfessions().forEach(p -> p.setSourceId(incomingId));
+                    storedPs.getProfessions().addAll(ps.getProfessions());
+                }
+                mongoTemplate.save(storedPs);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             // set mongo _id to avoid error if it's an update
             // Then update Ps data
@@ -161,6 +212,15 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         // PS DOES NOT EXIST, PHYSICAL CREATION
         else {
             log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
+            // Tag professions with sourceId for non-PSI accounts
+            if (!ApiUtils.isValidUUID(ps.getNationalId()) && ps.getProfessions() != null) {
+                final String sourceId = ps.getNationalId();
+                ps.getProfessions().forEach(prof -> {
+                    if (prof.getSourceId() == null) {
+                        prof.setSourceId(sourceId);
+                    }
+                });
+            }
             // if ids is null or doesn't contain nat id, we put nat id in it
             ApiUtils.setAppropriateIds(ps, null);
             ps.setActivated(timestamp);
@@ -215,6 +275,8 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                                 try {
                                     Ps professionPs = psRepository.findByNationalId(altId.getIdentifier());
                                     if (professionPs != null && professionPs.getProfessions() != null && !professionPs.getProfessions().isEmpty()) {
+                                        final String sourceId = altId.getIdentifier();
+                                        professionPs.getProfessions().forEach(prof -> prof.setSourceId(sourceId));
                                         ps.setProfessions(professionPs.getProfessions());
                                         log.info("Found and preserved professions from PS {}", altId.getIdentifier());
                                         break;
@@ -290,6 +352,16 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                 }
             }
 
+            // For non-PSI accounts (RPPS/ADELI/SIRET), tag professions with their own nationalId as sourceId
+            if (!ApiUtils.isValidUUID(ps.getNationalId()) && ps.getProfessions() != null) {
+                final String sourceId = ps.getNationalId();
+                ps.getProfessions().forEach(prof -> {
+                    if (prof.getSourceId() == null) {
+                        prof.setSourceId(sourceId);
+                    }
+                });
+            }
+
             ps = mongoTemplate.save(ps);
             log.info("Ps {} successfully updated", ps.getNationalId());
             
@@ -362,13 +434,77 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             log.warn("No Ps found with nationalId {}, will not be deleted", psId);
             return new ResponseEntity<>(HttpStatus.GONE);
         }
+        // Clean up before deactivation: remove professions, keep only nationalId in ids/alternativeIds
+        log.info("Cleaning up Ps {} before deactivation", storedPs.getNationalId());
+        storedPs.setProfessions(new ArrayList<>());
+        String nationalId = storedPs.getNationalId();
+        storedPs.setIds(new ArrayList<>(List.of(nationalId)));
+        if (storedPs.getAlternativeIds() != null) {
+            storedPs.setAlternativeIds(
+                storedPs.getAlternativeIds().stream()
+                    .filter(alt -> nationalId.equals(alt.getIdentifier()))
+                    .collect(java.util.stream.Collectors.toList())
+            );
+        }
         // deactivate the ps
         storedPs.setDeactivated(ApiUtils.getInstantTimestamp());
         mongoTemplate.save(storedPs);
 
-        for (String id : storedPs.getIds()) {
-            log.info("Ps {} successfully deleted", id);
+        log.info("Ps {} successfully deactivated and cleaned", nationalId);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePsSourceProfessions(String encodedPsId, String encodedSourceId) {
+        String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
+        String sourceId = URLDecoder.decode(encodedSourceId, StandardCharsets.UTF_8);
+
+        log.info("PURGE SOURCE: removing sourceId={} from PS {}", sourceId, psId);
+
+        // Lookup by nationalId (unique index, fast)
+        Ps storedPs = psRepository.findByNationalId(psId);
+        if (storedPs == null) {
+            // Fallback: search in ids array
+            try {
+                storedPs = psRepository.findByIdsContaining(psId);
+            } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                log.warn("Multiple PS found with psId {}, searching for active one using MongoTemplate", psId);
+                Query query = new Query(Criteria.where("ids").in(psId));
+                List<Ps> psList = mongoTemplate.find(query, Ps.class);
+                storedPs = psList.stream()
+                        .filter(ApiUtils::isPsActivated)
+                        .findFirst()
+                        .orElse(psList.isEmpty() ? null : psList.get(0));
+            }
         }
+
+        if (storedPs == null) {
+            log.warn("PS {} not found, cannot purge source {}", psId, sourceId);
+            return new ResponseEntity<>(HttpStatus.GONE);
+        }
+
+        // 1. Remove professions with this sourceId
+        if (storedPs.getProfessions() != null) {
+            storedPs.getProfessions().removeIf(p -> sourceId.equals(p.getSourceId()));
+        }
+
+        // 2. Remove from ids list
+        if (storedPs.getIds() != null) {
+            storedPs.getIds().remove(sourceId);
+        }
+
+        // 3. Remove from alternativeIds list
+        if (storedPs.getAlternativeIds() != null) {
+            storedPs.setAlternativeIds(
+                storedPs.getAlternativeIds().stream()
+                    .filter(alt -> !sourceId.equals(alt.getIdentifier()))
+                    .collect(java.util.stream.Collectors.toList())
+            );
+        }
+
+        mongoTemplate.save(storedPs);
+        log.info("Source {} purged from PS {}", sourceId, storedPs.getNationalId());
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

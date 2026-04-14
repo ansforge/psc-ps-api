@@ -15,6 +15,7 @@
  */
 package fr.ans.psc.delegate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -74,7 +75,34 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 			oldPs = findPsByNationalIdOrIds(oldId);
 
 			if (targetPs != null && oldPs != null) {
-				targetPs.setProfessions(oldPs.getProfessions());
+				if (oldPs.getProfessions() != null) {
+					final String sourceId = oldId;
+					oldPs.getProfessions().forEach(prof -> {
+						if (prof.getSourceId() == null) {
+							prof.setSourceId(sourceId);
+						}
+					});
+				}
+				// Tag absorbing account's own professions with its nationalId
+				if (targetPs.getProfessions() != null) {
+					final String targetSourceId = targetId;
+					targetPs.getProfessions().forEach(prof -> {
+						if (prof.getSourceId() == null) {
+							prof.setSourceId(targetSourceId);
+						}
+					});
+				}
+				// Merge professions: keep existing ones from other sources, replace those from this source
+				List<fr.ans.psc.model.Profession> mergedProfessions = new ArrayList<>();
+				if (targetPs.getProfessions() != null) {
+					targetPs.getProfessions().stream()
+						.filter(p -> !oldId.equals(p.getSourceId()))
+						.forEach(mergedProfessions::add);
+				}
+				if (oldPs.getProfessions() != null) {
+					mergedProfessions.addAll(oldPs.getProfessions());
+				}
+				targetPs.setProfessions(mergedProfessions);
 				targetPs.setIdType(ApiUtils.determineOriginAndType(targetPs.getNationalId()).get(ApiUtils.ID_TYPE));
 			}
 		}
