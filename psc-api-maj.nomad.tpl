@@ -76,7 +76,7 @@ job "psc-api-maj-v2" {
         env = true
         data = <<EOH
 PUBLIC_HOSTNAME={{ with secret "psc-ecosystem/${nomad_namespace}/admin" }}{{ .Data.data.admin_public_hostname }}{{ end }}
-JAVA_TOOL_OPTIONS="-Xms256m -Xmx2g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
+JAVA_TOOL_OPTIONS="-Xms256m -Xmx3g -XX:+UseG1GC -Dspring.config.location=/secrets/application.properties"
 EOH
       }
 
@@ -102,7 +102,7 @@ EOF
 
       resources {
         cpu = 500
-        memory = 2560
+        memory = 4096
       }
 
 
