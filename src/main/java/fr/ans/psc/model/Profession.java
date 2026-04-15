@@ -56,6 +56,9 @@ public class Profession implements Cloneable{
   @Valid
   private List<WorkSituation> workSituations = null;
 
+  @JsonProperty("sourceId")
+  private String sourceId;
+
   @Override
   public Profession clone() {
     try {
@@ -185,6 +188,14 @@ public class Profession implements Cloneable{
     this.workSituations = workSituations;
   }
 
+  @ApiModelProperty(value = "")
+  public String getSourceId() {
+    return sourceId;
+  }
+
+  public void setSourceId(String sourceId) {
+    this.sourceId = sourceId;
+  }
 
   @Override
   public boolean equals(Object o) {
