@@ -366,6 +366,35 @@ paths:
         '410':
           description: Not Found
       description: completely delete Ps (not only deactivate it)
+  '/v2/ps/{psId:.+}/source/{sourceId:.+}':
+    parameters:
+      - schema:
+          type: string
+        name: psId
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: sourceId
+        in: path
+        required: true
+    delete:
+      summary: Remove a source and its professions from a PS
+      tags:
+        - ps
+      operationId: delete-ps-source-professions
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: PS Not Found
+      description: Remove all professions tagged with the given sourceId, and remove the sourceId from ids and alternativeIds
   /v2/toggle:
     put:
       summary: Toggle PsRef mapping
