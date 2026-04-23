@@ -196,7 +196,12 @@ public class ToggleApiDelegateImpl implements ToggleApiDelegate {
 					mongoTemplate.remove(oldPs);
 					log.info("Ps {} successfully removed from database", oldPs.getNationalId());
 				} else {
-					log.warn("oldPs is null for id {}, cannot remove (may already be deleted)", oldId);
+					String result = String.format(
+						"Cannot merge Ps %s into %s: source Ps %s does not exist in database. " +
+						"Fusion aborted to prevent adding phantom identifier.",
+						oldId, targetId, oldId);
+					log.warn(result);
+					return new ResponseEntity<>(result, HttpStatus.GONE);
 				}
 			}
 
