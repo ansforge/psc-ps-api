@@ -144,7 +144,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             if (ApiUtils.isPsActivated(storedPs)) {
                 // If the stored PS is a PSI (UUID) and the incoming is a non-PSI identifier (RPPS/ADELI/SIRET),
                 // do a partial update: replace only the professions from this source identifier
-                if (ApiUtils.isValidUUID(storedPs.getNationalId()) && !ApiUtils.isValidUUID(ps.getNationalId())) {
+                if (!storedPs.getNationalId().equals(ps.getNationalId())) {
                     final String incomingId = ps.getNationalId();
                     // Tag incoming professions with sourceId before comparison
                     if (ps.getProfessions() != null) {
@@ -156,11 +156,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                                 .filter(p -> incomingId.equals(p.getSourceId()))
                                 .collect(java.util.stream.Collectors.toList());
                         if (ps.getProfessions() != null && existingForSource.equals(ps.getProfessions())) {
-                            log.info("Professions for source {} in PSI {} unchanged, skipping save", incomingId, storedPs.getNationalId());
+                            log.info("Professions for source {} in account {} unchanged, skipping save", incomingId, storedPs.getNationalId());
                             return new ResponseEntity<>(HttpStatus.OK);
                         }
                     }
-                    log.info("Partial update: replacing professions for source {} in PSI {}", incomingId, storedPs.getNationalId());
+                    log.info("Partial update: replacing professions for source {} in account {}", incomingId, storedPs.getNationalId());
                     if (storedPs.getProfessions() != null) {
                         storedPs.getProfessions().removeIf(p -> incomingId.equals(p.getSourceId()));
                     } else {
@@ -170,7 +170,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                         storedPs.getProfessions().addAll(ps.getProfessions());
                     }
                     mongoTemplate.save(storedPs);
-                    log.info("Partial update for source {} in PSI {} completed", incomingId, storedPs.getNationalId());
+                    log.info("Partial update for source {} in account {} completed", incomingId, storedPs.getNationalId());
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
                 log.warn("Ps {} already exists and is activated, will not be updated", ps.getNationalId());
@@ -179,8 +179,7 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             // If storedPs is a DEACTIVATED PSI and incoming is a non-UUID source (RPPS/ADELI/SIRET),
             // do partial update on professions WITHOUT reactivating
             if (!ApiUtils.isPsActivated(storedPs)
-                    && ApiUtils.isValidUUID(storedPs.getNationalId())
-                    && !ApiUtils.isValidUUID(ps.getNationalId())) {
+                    && !storedPs.getNationalId().equals(ps.getNationalId())) {
                 final String incomingId = ps.getNationalId();
                 log.info("Partial update on DEACTIVATED PSI: updating professions for source {} in PSI {} without reactivating",
                         incomingId, storedPs.getNationalId());
