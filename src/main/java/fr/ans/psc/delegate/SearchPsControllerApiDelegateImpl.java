@@ -50,14 +50,10 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
         
         query.addCriteria(Criteria.where("firstNamesLowerArray").all(firstNamesLower));
 
-        // Recherche par égalité (au lieu de regex) - utilise l'index
-        // OR sur lastNameLower + usualLastNameLower : un PS matche si le terme correspond
-        // soit à son nom légal, soit à son nom d'usage.
-        String lastNameLower = lastName.toLowerCase();
-        query.addCriteria(new Criteria().orOperator(
-            Criteria.where("lastNameLower").is(lastNameLower),
-            Criteria.where("usualLastNameLower").is(lastNameLower)
-        ));
+        // Recherche par égalité (au lieu de regex) - utilise l'index.
+        // Match strict sur lastName uniquement : la recherche par traits d'identité
+        // est une vérification d'identité civile, pas une recherche permissive.
+        query.addCriteria(Criteria.where("lastNameLower").is(lastName.toLowerCase()));
         
         query.addCriteria(Criteria.where("genderCode").is(genderCode));
         query.addCriteria(Criteria.where("dateOfBirth").is(birthdate.format(formatter)));
