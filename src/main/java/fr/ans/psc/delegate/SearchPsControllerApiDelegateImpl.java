@@ -90,8 +90,7 @@ public class SearchPsControllerApiDelegateImpl implements SearchPsControllerApiD
 			String lastNameLower = lastName.toLowerCase();
 			Criteria lastNameCriteria = new Criteria().orOperator(
 					Criteria.where("lastNameLower").is(lastNameLower),
-					Criteria.where("usualLastNameLower").is(lastNameLower),
-					Criteria.where("professions.lastNameLower").is(lastNameLower)
+					Criteria.where("usualLastNameLower").is(lastNameLower)
 			);
 			query.addCriteria(lastNameCriteria);
 		}
