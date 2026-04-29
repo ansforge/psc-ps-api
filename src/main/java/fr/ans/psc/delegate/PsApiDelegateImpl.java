@@ -281,6 +281,13 @@ public class PsApiDelegateImpl implements PsApiDelegate {
             ps.set_id(storedPs.get_id());
             ps.setActivated(storedPs.getActivated());
             ps.setDeactivated(storedPs.getDeactivated());
+            // Préserver usualLastName si le body entrant ne le fournit pas.
+            // Cas typique : pscload (RASS) qui ne pousse jamais ce champ → ne doit pas écraser
+            // la valeur posée côté PSI ou par la migration legacy.
+            if ((ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty())
+                    && storedPs.getUsualLastName() != null && !storedPs.getUsualLastName().isEmpty()) {
+                ps.setUsualLastName(storedPs.getUsualLastName());
+            }
             if (ApiUtils.isValidUUID(ps.getNationalId())) {
                 // Always preserve professions from stored PS for UUID-based PS (PSI)
                 if (storedPs.getProfessions() != null && !storedPs.getProfessions().isEmpty()) {
