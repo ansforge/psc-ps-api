@@ -1,0 +1,60 @@
+{
+  "fr.ans.psc.model.Ps": [
+    {
+      "idType": "8",
+      "id": "00000000001",
+      "nationalId": "800000000001",
+      "lastName": "DUPONT",
+      "firstNames": [{
+        "firstName":"JIMMY",
+        "order": 1
+      }],
+      "dateOfBirth": "17/12/1983",
+      "birthAddressCode": "57463",
+      "birthCountryCode": "99000",
+      "birthAddress": "METZ",
+      "genderCode": "M",
+      "phone": "0601020304",
+      "email": "jimmy@dupont.fr",
+      "salutationCode": "M",
+      "professions": [
+        {
+          "sourceId": "810000000001",
+          "exProId": "50C",
+          "code": "50",
+          "categoryCode": "C",
+          "salutationCode": "M",
+          "lastName": "DUPONT",
+          "firstName": "JIMMY",
+          "expertises": [],
+          "workSituations": [
+            {
+              "modeCode": "L",
+              "activitySectorCode": "SA07"
+            }
+          ]
+        },
+        {
+          "sourceId": "510000000002",
+          "exProId": "21C",
+          "code": "21",
+          "categoryCode": "C",
+          "lastName": "DUPONT",
+          "firstName": "JIMMY",
+          "expertises": [],
+          "workSituations": [
+            {
+              "modeCode": "S",
+              "activitySectorCode": "SA26"
+            }
+          ]
+        }
+      ],
+      "activated": 1638791225,
+      "ids": [
+          "800000000001",
+          "510000000002"
+      ]
+    }
+  ]
+}

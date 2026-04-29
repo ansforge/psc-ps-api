@@ -395,6 +395,39 @@ paths:
         '410':
           description: PS Not Found
       description: Remove all professions tagged with the given sourceId, and remove the sourceId from ids and alternativeIds
+  '/v2/ps/{psId:.+}/activity':
+    parameters:
+      - schema:
+          type: string
+        name: psId
+        in: path
+        required: true
+    put:
+      summary: Upsert a single profession identified by its sourceId
+      tags:
+        - ps
+      operationId: upsert-ps-activity
+      description: |
+        Add or replace one profession on a PS. The profession is identified by its `sourceId` (mandatory in the body).
+        If a stored profession on this PS has the same `sourceId`, it is replaced. Otherwise the profession is added.
+        Other professions (with different `sourceId`) remain untouched.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profession'
+      responses:
+        '200':
+          description: Profession upserted
+        '400':
+          description: Missing sourceId or invalid body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: PS Not Found
   /v2/toggle:
     put:
       summary: Toggle PsRef mapping
@@ -898,6 +931,9 @@ components:
           minLength: 1
         lastName:
           type: string
+        usualLastName:
+          type: string
+          description: Nom d'usage (ex. nom marital). Fourni par l'équipe PSI à la création ; distinct du nom légal (lastName).
         firstNames:
           type: array
           items:
