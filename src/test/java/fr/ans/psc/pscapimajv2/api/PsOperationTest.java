@@ -17,6 +17,7 @@ package fr.ans.psc.pscapimajv2.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -684,5 +685,253 @@ public class PsOperationTest extends BaseOperationTest {
         assertTrue("EVRARD".equals(finalPs.getProfessions().get(0).getLastName()));
 
         updatedPs.andDo(document("PsOperationTest/update_Ps"));
+    }
+
+    // ─── Itération 2 : PUT /v2/ps/{psId}/activity (upsert single profession) ───
+
+    @Test
+    @DisplayName(value = "upsertPsActivity: ajoute une nouvelle practice quand le sourceId n'existe pas")
+    @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
+    public void upsertPsActivity_addsNewWhenSourceIdAbsent() throws Exception {
+        // Le dataset initial a 1 practice tagged sourceId=null. On ajoute une practice sourceId=NEW_RPPS.
+        String newProfessionJson = "{"
+                + "\"sourceId\":\"810099999999\","
+                + "\"code\":\"21\","
+                + "\"lastName\":\"DUPONT\","
+                + "\"firstName\":\"JIMMY\","
+                + "\"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA07\"}]"
+                + "}";
+
+        mockMvc.perform(put("/api/v2/ps/800000000001/activity")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(newProfessionJson))
+                .andExpect(status().is(200));
+
+        Ps stored = psRepository.findByNationalId("800000000001");
+        assertEquals(2, stored.getProfessions().size());
+        assertThat(memoryAppender.contains("Activity upserted on PS 800000000001 for sourceId 810099999999", Level.INFO)).isTrue();
+    }
+
+    @Test
+    @DisplayName(value = "upsertPsActivity: remplace la practice existante quand le sourceId match")
+    @MongoDataSet(value = "/dataset/ps_with_rpps_practice.json", cleanBefore = true, cleanAfter = true)
+    public void upsertPsActivity_replacesExistingWhenSourceIdMatches() throws Exception {
+        // ps_with_rpps_practice.json a 1 practice tagged sourceId=810000000001 + 1 sourceId=510000000002.
+        String updatedProfessionJson = "{"
+                + "\"sourceId\":\"810000000001\","
+                + "\"code\":\"99\","
+                + "\"lastName\":\"DUPONT\","
+                + "\"firstName\":\"NOUVEAU\","
+                + "\"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA77\"}]"
+                + "}";
+
+        mockMvc.perform(put("/api/v2/ps/800000000001/activity")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(updatedProfessionJson))
+                .andExpect(status().is(200));
+
+        Ps stored = psRepository.findByNationalId("800000000001");
+        // Toujours 2 practices (la SIRET intacte, la RPPS remplacée)
+        assertEquals(2, stored.getProfessions().size());
+        // La practice avec sourceId=810000000001 a maintenant code=99 et firstName=NOUVEAU
+        boolean rppsReplaced = stored.getProfessions().stream()
+                .anyMatch(p -> "810000000001".equals(p.getSourceId())
+                        && "99".equals(p.getCode())
+                        && "NOUVEAU".equals(p.getFirstName()));
+        assertTrue(rppsReplaced, "La practice sourceId=810000000001 doit avoir été remplacée");
+        // La practice SIRET reste intacte
+        boolean siretUntouched = stored.getProfessions().stream()
+                .anyMatch(p -> "510000000002".equals(p.getSourceId()));
+        assertTrue(siretUntouched, "La practice sourceId=510000000002 doit rester intacte");
+    }
+
+    @Test
+    @DisplayName(value = "upsertPsActivity: 400 si sourceId manquant dans le body")
+    @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
+    public void upsertPsActivity_rejectsMissingSourceId() throws Exception {
+        String noSourceIdJson = "{\"code\":\"99\",\"lastName\":\"DUPONT\"}";
+
+        mockMvc.perform(put("/api/v2/ps/800000000001/activity")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(noSourceIdJson))
+                .andExpect(status().is(400));
+    }
+
+    @Test
+    @DisplayName(value = "upsertPsActivity: 400 si sourceId est un UUID (PSI-source interdit)")
+    @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
+    public void upsertPsActivity_rejectsUuidSourceId() throws Exception {
+        String uuidSourceIdJson = "{"
+                + "\"sourceId\":\"019ce28d-aa83-7c4b-b7bf-afc3ef900cf8\","
+                + "\"code\":\"99\""
+                + "}";
+
+        mockMvc.perform(put("/api/v2/ps/800000000001/activity")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(uuidSourceIdJson))
+                .andExpect(status().is(400));
+    }
+
+    @Test
+    @DisplayName(value = "upsertPsActivity: 410 si compte introuvable")
+    public void upsertPsActivity_returnsGoneWhenPsNotFound() throws Exception {
+        String validJson = "{\"sourceId\":\"810099999999\",\"code\":\"21\"}";
+
+        mockMvc.perform(put("/api/v2/ps/999999999999/activity")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(validJson))
+                .andExpect(status().is(410));
+    }
+
+    // ─── Fallback usualLastName à la création (règle de gestion validée) ───
+
+    @Test
+    @DisplayName(value = "createNewPs PSI: usualLastName non fourni → fallback sur lastName")
+    public void createNewPsi_defaultsUsualLastNameToLastName() throws Exception {
+        // PSI account (UUID nationalId), pas de usualLastName fourni.
+        String psiJson = "{"
+                + "\"nationalId\":\"019ce28d-aa83-7c4b-b7bf-afc3ef900cf8\","
+                + "\"lastName\":\"DUPONT\","
+                + "\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}]"
+                + "}";
+
+        mockMvc.perform(post("/api/v2/ps")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(psiJson))
+                .andExpect(status().is(201));
+
+        Ps stored = psRepository.findByNationalId("019ce28d-aa83-7c4b-b7bf-afc3ef900cf8");
+        assertEquals("DUPONT", stored.getUsualLastName(),
+                "PSI sans usualLastName doit fallback sur lastName");
+    }
+
+    @Test
+    @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni → fallback sur lastName de la 1ʳᵉ practice RPPS (sourceId commence par 8)")
+    public void createNewPsNonPsi_defaultsUsualLastNameToFirstRppsPractice() throws Exception {
+        // Non-PSI (RPPS), avec lastName="LEGAL" mais professions[0].lastName="USAGE".
+        // sourceId est auto-tagué à partir du nationalId "800000000099" → commence par "8" → RPPS.
+        // Doit fallback sur le professional lastName de cette practice.
+        String nonPsiJson = "{"
+                + "\"idType\":\"8\","
+                + "\"id\":\"00000000099\","
+                + "\"nationalId\":\"800000000099\","
+                + "\"lastName\":\"LEGAL\","
+                + "\"firstNames\":[{\"firstName\":\"JANE\",\"order\":1}],"
+                + "\"professions\":[{"
+                + "  \"code\":\"50\",\"lastName\":\"USAGE\",\"firstName\":\"JANE\","
+                + "  \"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA04\"}]"
+                + "}]"
+                + "}";
+
+        mockMvc.perform(post("/api/v2/ps")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(nonPsiJson))
+                .andExpect(status().is(201));
+
+        Ps stored = psRepository.findByNationalId("800000000099");
+        assertEquals("USAGE", stored.getUsualLastName(),
+                "Non-PSI sans usualLastName doit fallback sur le lastName de la 1ʳᵉ practice RPPS");
+    }
+
+    @Test
+    @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni avec mix de sourceIds → priorité à la practice RPPS (sourceId commence par 8)")
+    public void createNewPsNonPsi_defaultsUsualLastNamePrioritisesRppsPractice() throws Exception {
+        // Compte non-PSI avec 2 professions :
+        //   - sourceId "300000123456" (FINESS, commence par "3") → lastName="FINESS_NAME"
+        //   - sourceId "810000123456" (RPPS, commence par "8") → lastName="RPPS_NAME"
+        // La règle prend la 1ʳᵉ practice dont le sourceId commence par "8" → "RPPS_NAME".
+        // Le nationalId du compte est "300000123456" (FINESS), donc le sourceId par défaut
+        // serait "3..." mais on en force un explicitement à "8..." dans le body.
+        String nonPsiJson = "{"
+                + "\"idType\":\"3\","
+                + "\"id\":\"00000123456\","
+                + "\"nationalId\":\"300000123456\","
+                + "\"lastName\":\"LEGAL\","
+                + "\"firstNames\":[{\"firstName\":\"JANE\",\"order\":1}],"
+                + "\"professions\":["
+                + "  {"
+                + "    \"code\":\"10\",\"lastName\":\"FINESS_NAME\",\"firstName\":\"JANE\","
+                + "    \"sourceId\":\"300000123456\","
+                + "    \"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA05\"}]"
+                + "  },"
+                + "  {"
+                + "    \"code\":\"50\",\"lastName\":\"RPPS_NAME\",\"firstName\":\"JANE\","
+                + "    \"sourceId\":\"810000123456\","
+                + "    \"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA04\"}]"
+                + "  }"
+                + "]"
+                + "}";
+
+        mockMvc.perform(post("/api/v2/ps")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(nonPsiJson))
+                .andExpect(status().is(201));
+
+        Ps stored = psRepository.findByNationalId("300000123456");
+        assertEquals("RPPS_NAME", stored.getUsualLastName(),
+                "Avec mix de sourceIds, la practice RPPS (sourceId commence par 8) doit avoir priorité");
+    }
+
+    @Test
+    @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni et aucune practice RPPS → reste null")
+    public void createNewPsNonPsi_noRppsPractice_usualLastNameStaysNull() throws Exception {
+        // Compte FINESS pur (sourceId auto-tagué "3...") sans aucune practice RPPS.
+        // La règle ne trouve aucun candidat "8..." → usualLastName reste null.
+        String nonPsiJson = "{"
+                + "\"idType\":\"3\","
+                + "\"id\":\"00000654321\","
+                + "\"nationalId\":\"300000654321\","
+                + "\"lastName\":\"LEGAL\","
+                + "\"firstNames\":[{\"firstName\":\"JANE\",\"order\":1}],"
+                + "\"professions\":[{"
+                + "  \"code\":\"10\",\"lastName\":\"FINESS_NAME\",\"firstName\":\"JANE\","
+                + "  \"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA05\"}]"
+                + "}]"
+                + "}";
+
+        mockMvc.perform(post("/api/v2/ps")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(nonPsiJson))
+                .andExpect(status().is(201));
+
+        Ps stored = psRepository.findByNationalId("300000654321");
+        assertNull(stored.getUsualLastName(),
+                "Sans practice RPPS, usualLastName ne doit pas être défaulté (reste null)");
+    }
+
+    @Test
+    @DisplayName(value = "createNewPs: usualLastName fourni explicitement → respecté (pas de fallback)")
+    public void createNewPs_explicitUsualLastNameIsKept() throws Exception {
+        String json = "{"
+                + "\"idType\":\"8\","
+                + "\"id\":\"00000000098\","
+                + "\"nationalId\":\"800000000098\","
+                + "\"lastName\":\"LEGAL\","
+                + "\"usualLastName\":\"EXPLICIT\","
+                + "\"firstNames\":[{\"firstName\":\"JANE\",\"order\":1}],"
+                + "\"professions\":[{"
+                + "  \"code\":\"50\",\"lastName\":\"PROF_NAME\","
+                + "  \"workSituations\":[{\"modeCode\":\"L\",\"activitySectorCode\":\"SA04\"}]"
+                + "}]"
+                + "}";
+
+        mockMvc.perform(post("/api/v2/ps")
+                        .header("Accept", "application/json")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().is(201));
+
+        Ps stored = psRepository.findByNationalId("800000000098");
+        assertEquals("EXPLICIT", stored.getUsualLastName(),
+                "usualLastName fourni doit être préservé (pas écrasé par le fallback)");
     }
 }

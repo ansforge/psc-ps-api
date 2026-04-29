@@ -59,6 +59,9 @@ public class Ps implements Cloneable {
 	@JsonProperty("lastName")
 	private String lastName;
 
+	@JsonProperty("usualLastName")
+	private String usualLastName;
+
 	@JsonProperty("firstNames")
 	private List<FirstName> firstNames;
 
@@ -81,6 +84,10 @@ public class Ps implements Cloneable {
 	@JsonIgnore
 	@Indexed
 	private String lastNameLower;
+
+	@JsonIgnore
+	@Indexed
+	private String usualLastNameLower;
 
 	@JsonIgnore
 	@Indexed
@@ -197,8 +204,23 @@ public class Ps implements Cloneable {
 	}
 
 	/**
+	 * Get usualLastName
+	 *
+	 * @return usualLastName
+	 */
+	@ApiModelProperty(value = "Nom d'usage (ex. nom marital). Fourni par l'équipe PSI à la création ; distinct du nom légal (lastName).")
+	public String getUsualLastName() {
+		return usualLastName;
+	}
+
+	public void setUsualLastName(String usualLastName) {
+		this.usualLastName = usualLastName;
+		this.usualLastNameLower = usualLastName != null ? usualLastName.toLowerCase() : null;
+	}
+
+	/**
 	 * Get firstNames
-	 * 
+	 *
 	 * @return firstNames
 	 */
 	@ApiModelProperty(value = "")
@@ -295,6 +317,14 @@ public class Ps implements Cloneable {
 
 	public void setLastNameLower(String lastNameLower) {
 		this.lastNameLower = lastNameLower;
+	}
+
+	public String getUsualLastNameLower() {
+		return usualLastNameLower;
+	}
+
+	public void setUsualLastNameLower(String usualLastNameLower) {
+		this.usualLastNameLower = usualLastNameLower;
 	}
 
 	public String getBirthAddressLower() {
@@ -437,6 +467,7 @@ public class Ps implements Cloneable {
 		Ps ps = (Ps) o;
 		return Objects.equals(this.idType, ps.idType) && Objects.equals(this.id, ps.id)
 				&& Objects.equals(this.nationalId, ps.nationalId) && Objects.equals(this.lastName, ps.lastName)
+				&& Objects.equals(this.usualLastName, ps.usualLastName)
 				&& Objects.equals(this.firstNames, ps.firstNames) && Objects.equals(this.dateOfBirth, ps.dateOfBirth)
 				&& Objects.equals(this.birthAddressCode, ps.birthAddressCode)
 				&& Objects.equals(this.birthCountryCode, ps.birthCountryCode)
@@ -449,7 +480,7 @@ public class Ps implements Cloneable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(idType, id, nationalId, lastName, firstNames, dateOfBirth, birthAddressCode,
+		return Objects.hash(idType, id, nationalId, lastName, usualLastName, firstNames, dateOfBirth, birthAddressCode,
 				birthCountryCode, birthAddress, genderCode, phone, email, salutationCode, professions);
 	}
 
@@ -462,6 +493,7 @@ public class Ps implements Cloneable {
 		sb.append("    id: ").append(toIndentedString(id)).append("\n");
 		sb.append("    nationalId: ").append(toIndentedString(nationalId)).append("\n");
 		sb.append("    lastName: ").append(toIndentedString(lastName)).append("\n");
+		sb.append("    usualLastName: ").append(toIndentedString(usualLastName)).append("\n");
 		sb.append("    firstNames: ").append(toIndentedString(firstNames)).append("\n");
 		sb.append("    dateOfBirth: ").append(toIndentedString(dateOfBirth)).append("\n");
 		sb.append("    birthAddressCode: ").append(toIndentedString(birthAddressCode)).append("\n");

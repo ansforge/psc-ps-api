@@ -220,6 +220,27 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                     }
                 });
             }
+            // Default usualLastName if not provided :
+            //   - PSI account (UUID nationalId) → fallback to lastName
+            //   - non-PSI account → fallback to the lastName of the first profession
+            //     whose sourceId starts with "8" (RPPS). Le "8" est le préfixe RPPS standard.
+            //     Si aucune profession n'a un sourceId RPPS → on laisse null.
+            // Cf. règle de gestion validée avec le métier.
+            if (ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty()) {
+                if (ApiUtils.isValidUUID(ps.getNationalId())) {
+                    ps.setUsualLastName(ps.getLastName());
+                } else if (ps.getProfessions() != null && !ps.getProfessions().isEmpty()) {
+                    ps.getProfessions().stream()
+                            .filter(p -> p.getSourceId() != null && p.getSourceId().startsWith("8"))
+                            .map(p -> p.getLastName())
+                            .filter(name -> name != null && !name.isEmpty())
+                            .findFirst()
+                            .ifPresent(ps::setUsualLastName);
+                }
+                if (ps.getUsualLastName() != null && !ps.getUsualLastName().isEmpty()) {
+                    log.info("Defaulting usualLastName for new PS {} to '{}'", ps.getNationalId(), ps.getUsualLastName());
+                }
+            }
             // if ids is null or doesn't contain nat id, we put nat id in it
             ApiUtils.setAppropriateIds(ps, null);
             ps.setActivated(timestamp);
@@ -506,6 +527,59 @@ public class PsApiDelegateImpl implements PsApiDelegate {
         log.info("Source {} purged from PS {}", sourceId, storedPs.getNationalId());
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public ResponseEntity<Void> upsertPsActivity(String encodedPsId, fr.ans.psc.model.Profession profession) {
+        // Validation: sourceId required in body
+        if (profession == null
+                || profession.getSourceId() == null
+                || profession.getSourceId().isEmpty()) {
+            log.warn("upsertPsActivity rejected: missing sourceId in body");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        // Refuse a sourceId that looks like a UUID (PSI) — practices PSI-sourcées
+        // ne doivent plus être créées (post-migration usualLastName).
+        if (ApiUtils.isValidUUID(profession.getSourceId())) {
+            log.warn("upsertPsActivity rejected: sourceId {} is a UUID (PSI-sourced practices forbidden)",
+                    profession.getSourceId());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        String psId = URLDecoder.decode(encodedPsId, StandardCharsets.UTF_8);
+        log.info("UPSERT ACTIVITY: sourceId={} on PS {}", profession.getSourceId(), psId);
+
+        // Lookup PS by nationalId then fallback to ids array
+        Ps storedPs = psRepository.findByNationalId(psId);
+        if (storedPs == null) {
+            try {
+                storedPs = psRepository.findByIdsContaining(psId);
+            } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+                log.warn("Multiple PS found with psId {}, searching for active one using MongoTemplate", psId);
+                Query query = new Query(Criteria.where("ids").in(psId));
+                List<Ps> psList = mongoTemplate.find(query, Ps.class);
+                storedPs = psList.stream()
+                        .filter(ApiUtils::isPsActivated)
+                        .findFirst()
+                        .orElse(psList.isEmpty() ? null : psList.get(0));
+            }
+        }
+
+        if (storedPs == null) {
+            log.warn("PS {} not found, cannot upsert activity", psId);
+            return new ResponseEntity<>(HttpStatus.GONE);
+        }
+
+        if (storedPs.getProfessions() == null) {
+            storedPs.setProfessions(new ArrayList<>());
+        }
+        final String sourceId = profession.getSourceId();
+        storedPs.getProfessions().removeIf(p -> sourceId.equals(p.getSourceId()));
+        storedPs.getProfessions().add(profession);
+
+        mongoTemplate.save(storedPs);
+        log.info("Activity upserted on PS {} for sourceId {}", storedPs.getNationalId(), sourceId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
