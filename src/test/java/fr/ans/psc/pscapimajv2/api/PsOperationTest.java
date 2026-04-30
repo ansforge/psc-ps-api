@@ -881,10 +881,10 @@ public class PsOperationTest extends BaseOperationTest {
     }
 
     @Test
-    @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni et aucune practice RPPS → reste null")
-    public void createNewPsNonPsi_noRppsPractice_usualLastNameStaysNull() throws Exception {
+    @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni et aucune practice RPPS → fallback sur lastName")
+    public void createNewPsNonPsi_noRppsPractice_fallbackOnLastName() throws Exception {
         // Compte FINESS pur (sourceId auto-tagué "3...") sans aucune practice RPPS.
-        // La règle ne trouve aucun candidat "8..." → usualLastName reste null.
+        // Aucune règle spécifique ne match → fallback final sur lastName.
         String nonPsiJson = "{"
                 + "\"idType\":\"3\","
                 + "\"id\":\"00000654321\","
@@ -904,8 +904,8 @@ public class PsOperationTest extends BaseOperationTest {
                 .andExpect(status().is(201));
 
         Ps stored = psRepository.findByNationalId("300000654321");
-        assertNull(stored.getUsualLastName(),
-                "Sans practice RPPS, usualLastName ne doit pas être défaulté (reste null)");
+        assertEquals("LEGAL", stored.getUsualLastName(),
+                "Sans practice RPPS, usualLastName doit fallback sur lastName");
     }
 
     @Test
