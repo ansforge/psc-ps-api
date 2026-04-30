@@ -221,11 +221,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                 });
             }
             // Default usualLastName if not provided :
-            //   - PSI account (UUID nationalId) → fallback to lastName
-            //   - non-PSI account → fallback to the lastName of the first profession
-            //     whose sourceId starts with "8" (RPPS). Le "8" est le préfixe RPPS standard.
-            //     Si aucune profession n'a un sourceId RPPS → on laisse null.
-            // Cf. règle de gestion validée avec le métier.
+            //   - PSI account (UUID nationalId) → fallback sur lastName
+            //   - non-PSI : profession dont sourceId commence par "8" (RPPS) si présente
+            //   - Fallback : lastName du PS (couverture complète, garantit que tout PS créé
+            //     a un usualLastName même sans profession RPPS — ex. FINESS mono-prof)
+            // Cf. règle de gestion alignée avec migrate-usual-lastname.js.
             if (ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty()) {
                 if (ApiUtils.isValidUUID(ps.getNationalId())) {
                     ps.setUsualLastName(ps.getLastName());
@@ -236,6 +236,11 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                             .filter(name -> name != null && !name.isEmpty())
                             .findFirst()
                             .ifPresent(ps::setUsualLastName);
+                }
+                // Fallback ultime : si aucune règle n'a matché, on prend lastName.
+                if ((ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty())
+                        && ps.getLastName() != null && !ps.getLastName().isEmpty()) {
+                    ps.setUsualLastName(ps.getLastName());
                 }
                 if (ps.getUsualLastName() != null && !ps.getUsualLastName().isEmpty()) {
                     log.info("Defaulting usualLastName for new PS {} to '{}'", ps.getNationalId(), ps.getUsualLastName());
