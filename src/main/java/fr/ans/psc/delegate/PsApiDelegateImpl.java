@@ -26,6 +26,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -618,7 +619,15 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     @Override
     public ResponseEntity<List<Ps>> getPsByPage(BigDecimal page, BigDecimal size) {
         log.debug("get Ps By Page, page {} of size {}", page, size == null ? PAGE_SIZE : size.intValue());
-        Pageable paging = PageRequest.of(page.intValue(), size == null ? PAGE_SIZE : size.intValue());
+        // Sort explicite sur _id pour garantir un ordre stable entre pages.
+        // Sans ce sort, MongoDB ne garantit pas l'ordre, et un skip+limit peut renvoyer
+        // des doublons (un doc présent dans 2 pages consécutives) ou skipper des docs.
+        // Cf. https://www.mongodb.com/docs/manual/reference/method/cursor.sort/
+        Pageable paging = PageRequest.of(
+                page.intValue(),
+                size == null ? PAGE_SIZE : size.intValue(),
+                Sort.by("_id")
+        );
 
         // Use MongoTemplate with pagination
         Query query = new Query().with(paging);
