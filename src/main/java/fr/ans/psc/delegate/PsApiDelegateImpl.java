@@ -123,138 +123,167 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     @Override
     public ResponseEntity<Void> createNewPs(Ps ps) {
         long timestamp = ApiUtils.getInstantTimestamp();
-        Ps storedPs;
-        
-        try {
-            storedPs = psRepository.findByIdsContaining(ps.getNationalId());
-        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
-            log.warn("Multiple PS found with nationalId {}, searching for active one using MongoTemplate", ps.getNationalId());
-            Query query = new Query(Criteria.where("ids").in(ps.getNationalId()));
-            List<Ps> psList = mongoTemplate.find(query, Ps.class);
-            storedPs = psList.stream()
-                    .filter(ApiUtils::isPsActivated)
-                    .findFirst()
-                    .orElse(psList.isEmpty() ? null : psList.get(0));
-        }
-        
+        Ps storedPs = findStoredPs(ps.getNationalId());
+
         // Remove prof - COMMENTED OUT to preserve professions data
         // ps.setProfessions(new ArrayList<Profession>());
         // PS EXISTS, UPDATE AND REACTIVATION
         if (storedPs != null) {
-            // DON'T UPDATE IF ALREADY ACTIVATED
-            if (ApiUtils.isPsActivated(storedPs)) {
-                // If the stored PS is a PSI (UUID) and the incoming is a non-PSI identifier (RPPS/ADELI/SIRET),
-                // do a partial update: replace only the professions from this source identifier
-                if (!storedPs.getNationalId().equals(ps.getNationalId())) {
-                    final String incomingId = ps.getNationalId();
-                    // Tag incoming professions with sourceId before comparison
-                    if (ps.getProfessions() != null) {
-                        ps.getProfessions().forEach(p -> p.setSourceId(incomingId));
-                    }
-                    // Skip save if professions for this source haven't changed
-                    if (storedPs.getProfessions() != null) {
-                        List<Profession> existingForSource = storedPs.getProfessions().stream()
-                                .filter(p -> incomingId.equals(p.getSourceId()))
-                                .collect(java.util.stream.Collectors.toList());
-                        if (ps.getProfessions() != null && existingForSource.equals(ps.getProfessions())) {
-                            log.info("Professions for source {} in account {} unchanged, skipping save", incomingId, storedPs.getNationalId());
-                            return new ResponseEntity<>(HttpStatus.OK);
-                        }
-                    }
-                    log.info("Partial update: replacing professions for source {} in account {}", incomingId, storedPs.getNationalId());
-                    if (storedPs.getProfessions() != null) {
-                        storedPs.getProfessions().removeIf(p -> incomingId.equals(p.getSourceId()));
-                    } else {
-                        storedPs.setProfessions(new ArrayList<>());
-                    }
-                    if (ps.getProfessions() != null) {
-                        storedPs.getProfessions().addAll(ps.getProfessions());
-                    }
-                    mongoTemplate.save(storedPs);
-                    log.info("Partial update for source {} in account {} completed", incomingId, storedPs.getNationalId());
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
-                log.warn("Ps {} already exists and is activated, will not be updated", ps.getNationalId());
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-            }
-            // If storedPs is a DEACTIVATED PSI and incoming is a non-UUID source (RPPS/ADELI/SIRET),
-            // do partial update on professions WITHOUT reactivating
-            if (!ApiUtils.isPsActivated(storedPs)
-                    && !storedPs.getNationalId().equals(ps.getNationalId())) {
-                final String incomingId = ps.getNationalId();
-                log.info("Partial update on DEACTIVATED PSI: updating professions for source {} in PSI {} without reactivating",
-                        incomingId, storedPs.getNationalId());
-                if (storedPs.getProfessions() != null) {
-                    storedPs.getProfessions().removeIf(p -> incomingId.equals(p.getSourceId()));
-                } else {
-                    storedPs.setProfessions(new ArrayList<>());
-                }
-                if (ps.getProfessions() != null) {
-                    ps.getProfessions().forEach(p -> p.setSourceId(incomingId));
-                    storedPs.getProfessions().addAll(ps.getProfessions());
-                }
-                mongoTemplate.save(storedPs);
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-            // set mongo _id to avoid error if it's an update
-            // Then update Ps data
-            log.info("Ps {} already exists, will be updated", ps.getNationalId());
-            ps.set_id(storedPs.get_id());
-            // if ids is null or doesn't contain nat id, we take the one from the stored ps
-            ApiUtils.setAppropriateIds(ps, storedPs);
-            ps.setActivated(timestamp);
-            mongoTemplate.save(ps);
-            log.info("Ps {} successfully stored or updated", ps.getNationalId());
-            for (String id : ps.getIds()) {
-                log.info("Ps {} has been reactivated", id);
-            }
+            return handleExistingPs(ps, storedPs, timestamp);
         }
         // PS DOES NOT EXIST, PHYSICAL CREATION
         else {
-            log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
-            // Tag professions with sourceId for non-PSI accounts
-            if (!ApiUtils.isValidUUID(ps.getNationalId()) && ps.getProfessions() != null) {
-                final String sourceId = ps.getNationalId();
-                ps.getProfessions().forEach(prof -> {
-                    if (prof.getSourceId() == null) {
-                        prof.setSourceId(sourceId);
-                    }
-                });
-            }
-            // Default usualLastName if not provided :
-            //   - PSI account (UUID nationalId) → fallback sur lastName
-            //   - non-PSI : profession dont sourceId commence par "8" (RPPS) si présente
-            //   - Fallback : lastName du PS (couverture complète, garantit que tout PS créé
-            //     a un usualLastName même sans profession RPPS — ex. FINESS mono-prof)
-            // Cf. règle de gestion alignée avec migrate-usual-lastname.js.
-            if (ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty()) {
-                if (ApiUtils.isValidUUID(ps.getNationalId())) {
-                    ps.setUsualLastName(ps.getLastName());
-                } else if (ps.getProfessions() != null && !ps.getProfessions().isEmpty()) {
-                    ps.getProfessions().stream()
-                            .filter(p -> p.getSourceId() != null && p.getSourceId().startsWith("8"))
-                            .map(p -> p.getLastName())
-                            .filter(name -> name != null && !name.isEmpty())
-                            .findFirst()
-                            .ifPresent(ps::setUsualLastName);
-                }
-                // Fallback ultime : si aucune règle n'a matché, on prend lastName.
-                if ((ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty())
-                        && ps.getLastName() != null && !ps.getLastName().isEmpty()) {
-                    ps.setUsualLastName(ps.getLastName());
-                }
-                if (ps.getUsualLastName() != null && !ps.getUsualLastName().isEmpty()) {
-                    log.info("Defaulting usualLastName for new PS {} to '{}'", ps.getNationalId(), ps.getUsualLastName());
-                }
-            }
-            // if ids is null or doesn't contain nat id, we put nat id in it
-            ApiUtils.setAppropriateIds(ps, null);
-            ps.setActivated(timestamp);
-            mongoTemplate.save(ps);
-            log.info("Ps {} successfully stored or updated", ps.getNationalId());
+            return createBrandNewPs(ps, timestamp);
         }
+    }
 
+    private Ps findStoredPs(String nationalId) {
+        try {
+            return psRepository.findByIdsContaining(nationalId);
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
+            log.warn("Multiple PS found with nationalId {}, searching for active one using MongoTemplate", nationalId);
+            Query query = new Query(Criteria.where("ids").in(nationalId));
+            List<Ps> psList = mongoTemplate.find(query, Ps.class);
+            return psList.stream()
+                    .filter(ApiUtils::isPsActivated)
+                    .findFirst()
+                    .orElse(psList.isEmpty() ? null : psList.get(0));
+        }
+    }
+
+    private ResponseEntity<Void> handleExistingPs(Ps ps, Ps storedPs, long timestamp) {
+        // DON'T UPDATE IF ALREADY ACTIVATED
+        if (ApiUtils.isPsActivated(storedPs)) {
+            return handleActivatedPs(ps, storedPs);
+        }
+        // If storedPs is a DEACTIVATED PSI and incoming is a non-UUID source (RPPS/ADELI/SIRET),
+        // do partial update on professions WITHOUT reactivating
+        if (!storedPs.getNationalId().equals(ps.getNationalId())) {
+            return handleDeactivatedPsPartialUpdate(ps, storedPs);
+        }
+        // set mongo _id to avoid error if it's an update
+        // Then update Ps data
+        return reactivatePs(ps, storedPs, timestamp);
+    }
+
+    private ResponseEntity<Void> handleActivatedPs(Ps ps, Ps storedPs) {
+        // If the stored PS is a PSI (UUID) and the incoming is a non-PSI identifier (RPPS/ADELI/SIRET),
+        // do a partial update: replace only the professions from this source identifier
+        if (!storedPs.getNationalId().equals(ps.getNationalId())) {
+            return handleActivatedPsPartialUpdate(ps, storedPs);
+        }
+        log.warn("Ps {} already exists and is activated, will not be updated", ps.getNationalId());
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
+    }
+
+    private ResponseEntity<Void> handleActivatedPsPartialUpdate(Ps ps, Ps storedPs) {
+        final String incomingId = ps.getNationalId();
+        // Tag incoming professions with sourceId before comparison
+        if (ps.getProfessions() != null) {
+            ps.getProfessions().forEach(p -> p.setSourceId(incomingId));
+        }
+        // Skip save if professions for this source haven't changed
+        if (storedPs.getProfessions() != null) {
+            List<Profession> existingForSource = storedPs.getProfessions().stream()
+                    .filter(p -> incomingId.equals(p.getSourceId()))
+                    .collect(java.util.stream.Collectors.toList());
+            if (ps.getProfessions() != null && existingForSource.equals(ps.getProfessions())) {
+                log.info("Professions for source {} in account {} unchanged, skipping save", incomingId, storedPs.getNationalId());
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+        }
+        log.info("Partial update: replacing professions for source {} in account {}", incomingId, storedPs.getNationalId());
+        replaceProfessionsForSource(ps, storedPs, incomingId);
+        mongoTemplate.save(storedPs);
+        log.info("Partial update for source {} in account {} completed", incomingId, storedPs.getNationalId());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private ResponseEntity<Void> handleDeactivatedPsPartialUpdate(Ps ps, Ps storedPs) {
+        final String incomingId = ps.getNationalId();
+        log.info("Partial update on DEACTIVATED PSI: updating professions for source {} in PSI {} without reactivating",
+                incomingId, storedPs.getNationalId());
+        if (ps.getProfessions() != null) {
+            ps.getProfessions().forEach(p -> p.setSourceId(incomingId));
+        }
+        replaceProfessionsForSource(ps, storedPs, incomingId);
+        mongoTemplate.save(storedPs);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private void replaceProfessionsForSource(Ps ps, Ps storedPs, String sourceId) {
+        if (storedPs.getProfessions() != null) {
+            storedPs.getProfessions().removeIf(p -> sourceId.equals(p.getSourceId()));
+        } else {
+            storedPs.setProfessions(new ArrayList<>());
+        }
+        if (ps.getProfessions() != null) {
+            storedPs.getProfessions().addAll(ps.getProfessions());
+        }
+    }
+
+    private ResponseEntity<Void> reactivatePs(Ps ps, Ps storedPs, long timestamp) {
+        log.info("Ps {} already exists, will be updated", ps.getNationalId());
+        ps.set_id(storedPs.get_id());
+        // if ids is null or doesn't contain nat id, we take the one from the stored ps
+        ApiUtils.setAppropriateIds(ps, storedPs);
+        ps.setActivated(timestamp);
+        mongoTemplate.save(ps);
+        log.info("Ps {} successfully stored or updated", ps.getNationalId());
+        for (String id : ps.getIds()) {
+            log.info("Ps {} has been reactivated", id);
+        }
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    private ResponseEntity<Void> createBrandNewPs(Ps ps, long timestamp) {
+        log.info("PS {} doesn't exist already, will be created", ps.getNationalId());
+        // Tag professions with sourceId for non-PSI accounts
+        if (!ApiUtils.isValidUUID(ps.getNationalId()) && ps.getProfessions() != null) {
+            final String sourceId = ps.getNationalId();
+            ps.getProfessions().forEach(prof -> {
+                if (prof.getSourceId() == null) {
+                    prof.setSourceId(sourceId);
+                }
+            });
+        }
+        // Default usualLastName if not provided :
+        //   - PSI account (UUID nationalId) → fallback sur lastName
+        //   - non-PSI : profession dont sourceId commence par "8" (RPPS) si présente
+        //   - Fallback : lastName du PS (couverture complète, garantit que tout PS créé
+        //     a un usualLastName même sans profession RPPS — ex. FINESS mono-prof)
+        // Cf. règle de gestion alignée avec migrate-usual-lastname.js.
+        defaultUsualLastName(ps);
+        // if ids is null or doesn't contain nat id, we put nat id in it
+        ApiUtils.setAppropriateIds(ps, null);
+        ps.setActivated(timestamp);
+        mongoTemplate.save(ps);
+        log.info("Ps {} successfully stored or updated", ps.getNationalId());
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    private void defaultUsualLastName(Ps ps) {
+        if (ps.getUsualLastName() != null && !ps.getUsualLastName().isEmpty()) {
+            return;
+        }
+        if (ApiUtils.isValidUUID(ps.getNationalId())) {
+            ps.setUsualLastName(ps.getLastName());
+        } else if (ps.getProfessions() != null && !ps.getProfessions().isEmpty()) {
+            ps.getProfessions().stream()
+                    .filter(p -> p.getSourceId() != null && p.getSourceId().startsWith("8"))
+                    .map(p -> p.getLastName())
+                    .filter(name -> name != null && !name.isEmpty())
+                    .findFirst()
+                    .ifPresent(ps::setUsualLastName);
+        }
+        // Fallback ultime : si aucune règle n'a matché, on prend lastName.
+        if ((ps.getUsualLastName() == null || ps.getUsualLastName().isEmpty())
+                && ps.getLastName() != null && !ps.getLastName().isEmpty()) {
+            ps.setUsualLastName(ps.getLastName());
+        }
+        if (ps.getUsualLastName() != null && !ps.getUsualLastName().isEmpty()) {
+            log.info("Defaulting usualLastName for new PS {} to '{}'", ps.getNationalId(), ps.getUsualLastName());
+        }
     }
 
     @Override
