@@ -215,7 +215,7 @@ public class PsOperationTest extends BaseOperationTest {
         
         ResultActions createdPs2 = mockMvc.perform(post("/api/v2/ps").header("Accept", "application/json")
                 .contentType("application/json").content("{\"idType\":\"8\",\"id\":\"00000000002\"," +"\"ids\":[\"800000000002\",\"855e8700-e29b-41d4-a716-44665544111\"],"+  
-                		"\"alternativeIds\":[{\"identifier\":\"800000000002\",\"origine\":\"RPPS\",\"quality\":1},{\"identifier\":\"855e8700-e29b-41d4-a716-44665544111\",\"origine\":\"PSI\",\"quality\":2}]," + "\"quality\":0," +
+                        "\"alternativeIds\":[{\"identifier\":\"800000000002\",\"origine\":\"RPPS\",\"quality\":1},{\"identifier\":\"855e8700-e29b-41d4-a716-44665544111\",\"origine\":\"PSI\",\"quality\":2}]," + "\"quality\":0," +
                         "\"nationalId\":\"855e8700-e29b-41d4-a716-44665544111\",\"lastName\":\"DUPONT\",\"firstNames\":[{\"firstName\":\"JIMMY\",\"order\":1}],\"dateOfBirth\":\"17/12/1983\"," +
                         "\"birthAddressCode\":\"57463\",\"birthCountryCode\":\"99000\",\"birthAddress\":\"METZ\",\"genderCode\":\"M\"," +
                         "\"phone\":\"0601020304\",\"email\":\"toto57@hotmail.fr\",\"salutationCode\":\"MME\",\"professions\":[{\"exProId\":\"50C\"," +
@@ -388,10 +388,10 @@ public class PsOperationTest extends BaseOperationTest {
     @DisplayName(value = "Search a PS by identity")
     @MongoDataSet(value = "/dataset/ps_search_by_identity.json", cleanBefore = true, cleanAfter = true)
     public void searchPs() throws Exception {
-    	
-    	// Only required criterias (and only one firstName)
-    	ResultActions result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        
+        // Only required criterias (and only one firstName)
+        ResultActions result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY")
@@ -399,13 +399,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthdate", "1983-12-17")
         )
         .andExpect(status().is(200));
-    	String responseBody = result.andReturn().getResponse().getContentAsString();
+        String responseBody = result.andReturn().getResponse().getContentAsString();
 
         assertTrue(responseBody.contains("800000000001") && responseBody.contains("800000000002"));
  
         // Only required criterias (and all firstnames)
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB")
@@ -413,13 +413,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthdate", "1983-12-17")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
         assertTrue(responseBody.contains("800000000001"));
         
         // Only required criterias + birthCountryCode
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB")
@@ -428,13 +428,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthCountryCode","99000")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
         assertTrue(responseBody.contains("800000000001"));
         
         // Only required criterias + birthCountryCode + birthAddressCode
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB")
@@ -444,13 +444,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthTownCode","57463")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
         assertTrue(responseBody.contains("800000000001"));
         
         // All criterias (+ optionals birthCountryCode, birthAddressCode, birthAddress)
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB")
@@ -461,13 +461,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthplace","METZ")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
         assertTrue(responseBody.contains("800000000001"));
         
         // All criterias, fake firstname
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB TOTO")
@@ -478,13 +478,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthplace","METZ")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
         assertEquals("[]", responseBody);
         
         // All criterias, fake birthCountryCode
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB")
@@ -495,13 +495,13 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthplace","METZ")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
-    	assertEquals("[]", responseBody);
-    	
+        assertEquals("[]", responseBody);
+        
         // All criterias, fake birthCountryCode
-    	result = mockMvc.perform(
-    	        get("/api/v2/ps/search")
+        result = mockMvc.perform(
+                get("/api/v2/ps/search")
                 .header("Accept", "application/json")
                 .param("lastName", "DUPONT")
                 .param("firstNames", "JIMMY BOB")
@@ -512,9 +512,9 @@ public class PsOperationTest extends BaseOperationTest {
                 .param("birthplace","METZ")
         )
         .andExpect(status().is(200));
-    	responseBody = result.andReturn().getResponse().getContentAsString();
+        responseBody = result.andReturn().getResponse().getContentAsString();
 
-    	assertEquals("[]", responseBody);
+        assertEquals("[]", responseBody);
     }
 
     @Test
@@ -763,7 +763,7 @@ public class PsOperationTest extends BaseOperationTest {
     @Test
     @DisplayName(value = "upsertPsActivity: 400 si sourceId est un UUID (PSI-source interdit)")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
-    public void upsertPsActivity_rejectsUuidSourceId() throws Exception {
+    void upsertPsActivity_rejectsUuidSourceId() throws Exception {
         String uuidSourceIdJson = "{"
                 + "\"sourceId\":\"019ce28d-aa83-7c4b-b7bf-afc3ef900cf8\","
                 + "\"code\":\"99\""
@@ -778,7 +778,7 @@ public class PsOperationTest extends BaseOperationTest {
 
     @Test
     @DisplayName(value = "upsertPsActivity: 410 si compte introuvable")
-    public void upsertPsActivity_returnsGoneWhenPsNotFound() throws Exception {
+    void upsertPsActivity_returnsGoneWhenPsNotFound() throws Exception {
         String validJson = "{\"sourceId\":\"810099999999\",\"code\":\"21\"}";
 
         mockMvc.perform(put("/api/v2/ps/999999999999/activity")
@@ -792,7 +792,7 @@ public class PsOperationTest extends BaseOperationTest {
 
     @Test
     @DisplayName(value = "createNewPs PSI: usualLastName non fourni → fallback sur lastName")
-    public void createNewPsi_defaultsUsualLastNameToLastName() throws Exception {
+    void createNewPsi_defaultsUsualLastNameToLastName() throws Exception {
         // PSI account (UUID nationalId), pas de usualLastName fourni.
         String psiJson = "{"
                 + "\"nationalId\":\"019ce28d-aa83-7c4b-b7bf-afc3ef900cf8\","
@@ -813,7 +813,7 @@ public class PsOperationTest extends BaseOperationTest {
 
     @Test
     @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni → fallback sur lastName de la 1ʳᵉ practice RPPS (sourceId commence par 8)")
-    public void createNewPsNonPsi_defaultsUsualLastNameToFirstRppsPractice() throws Exception {
+    void createNewPsNonPsi_defaultsUsualLastNameToFirstRppsPractice() throws Exception {
         // Non-PSI (RPPS), avec lastName="LEGAL" mais professions[0].lastName="USAGE".
         // sourceId est auto-tagué à partir du nationalId "800000000099" → commence par "8" → RPPS.
         // Doit fallback sur le professional lastName de cette practice.
@@ -842,7 +842,7 @@ public class PsOperationTest extends BaseOperationTest {
 
     @Test
     @DisplayName(value = "createNewPs non-PSI: usualLastName non fourni avec mix de sourceIds → priorité à la practice RPPS (sourceId commence par 8)")
-    public void createNewPsNonPsi_defaultsUsualLastNamePrioritisesRppsPractice() throws Exception {
+    void createNewPsNonPsi_defaultsUsualLastNamePrioritisesRppsPractice() throws Exception {
         // Compte non-PSI avec 2 professions :
         //   - sourceId "300000123456" (FINESS, commence par "3") → lastName="FINESS_NAME"
         //   - sourceId "810000123456" (RPPS, commence par "8") → lastName="RPPS_NAME"
