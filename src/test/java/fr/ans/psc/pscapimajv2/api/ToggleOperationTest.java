@@ -69,7 +69,7 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, PSI_RPPS case")
 	@MongoDataSet(value = "/dataset/toggle_PSI_RPPS.json", cleanBefore = true, cleanAfter = true)
-	public void PSIandRPPStogglePsRef() throws Exception {
+	void PSIandRPPStogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("550e8400-e29b-41d4-a716-446655440000");
 		Ps ps2 = psRepository.findByNationalId("81");
@@ -103,7 +103,7 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, PSI only case")
 	@MongoDataSet(value = "/dataset/toggle_PSI_only.json", cleanBefore = true, cleanAfter = true)
-	public void psiTogglePsRef() throws Exception {
+	void psiTogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("855e8700-e29b-41d4-a716-44665544111");
 		Ps ps2 = psRepository.findByNationalId("3 110000056/000000001");
@@ -139,7 +139,7 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, RPPS only case")
 	@MongoDataSet(value = "/dataset/toggle_RPPS_only.json", cleanBefore = true, cleanAfter = true)
-	public void rppsTogglePsRef() throws Exception {
+	void rppsTogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("4380527788/8165");
 		Ps ps2 = psRepository.findByNationalId("811234567896");
@@ -170,7 +170,7 @@ public class ToggleOperationTest extends BaseOperationTest {
 	@Test
 	@DisplayName(value = "should toggle PsRef, Adeli case")
 	@MongoDataSet(value = "/dataset/toggle_Adeli.json", cleanBefore = true, cleanAfter = true)
-	public void adeliTogglePsRef() throws Exception {
+	void adeliTogglePsRef() throws Exception {
 
 		Ps ps1 = psRepository.findByNationalId("000327008728");
 		Ps ps2 = psRepository.findByNationalId("538052778800034/8165");
