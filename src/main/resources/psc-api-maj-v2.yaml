@@ -144,6 +144,15 @@ paths:
          required: false
          schema:
            type: string
+       - name: source
+         in: query
+         description: >-
+           Optional origin of the update. With value "portal" (manual edit from the
+           sec-psc admin portal), the professions sent are saved as is, including on
+           PSI (UUID) accounts where they are otherwise kept from the stored PS.
+         required: false
+         schema:
+           type: string
       responses:
         '200':
           description: OK

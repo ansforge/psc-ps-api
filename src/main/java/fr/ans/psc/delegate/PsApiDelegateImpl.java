@@ -49,6 +49,8 @@ import lombok.extern.slf4j.Slf4j;
 public class PsApiDelegateImpl implements PsApiDelegate {
 
     public static final Integer PAGE_SIZE = 1000;
+    /** Valeur du paramètre {@code source} de PUT /v2/ps pour une modification depuis le portail sec-psc. */
+    public static final String UPDATE_SOURCE_PORTAL = "portal";
     private final PsRepository psRepository;
     private final MongoTemplate mongoTemplate;
     private final ToggleApiDelegateImpl toggleApiDelegateImpl;
@@ -258,7 +260,10 @@ public class PsApiDelegateImpl implements PsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Void> updatePs(Ps ps, String existingId) {
+    public ResponseEntity<Void> updatePs(Ps ps, String existingId, String source) {
+        // Une modification manuelle depuis le portail sec-psc doit être enregistrée telle quelle,
+        // y compris les professions d'un compte PSI (sinon écrasées par celles en base, cf. plus bas).
+        boolean fromPortal = UPDATE_SOURCE_PORTAL.equalsIgnoreCase(source);
         // check if ps is activated before trying to update it
         // Use existingId parameter to find the stored PS, not ps.getNationalId()
         String searchId = existingId != null && !existingId.isEmpty() ? existingId : ps.getNationalId();
@@ -294,7 +299,9 @@ public class PsApiDelegateImpl implements PsApiDelegate {
                     && storedPs.getUsualLastName() != null && !storedPs.getUsualLastName().isEmpty()) {
                 ps.setUsualLastName(storedPs.getUsualLastName());
             }
-            if (ApiUtils.isValidUUID(ps.getNationalId())) {
+            if (fromPortal) {
+                log.info("Update of Ps {} from portal: professions saved as sent", ps.getNationalId());
+            } else if (ApiUtils.isValidUUID(ps.getNationalId())) {
                 // Always preserve professions from stored PS for UUID-based PS (PSI)
                 if (storedPs.getProfessions() != null && !storedPs.getProfessions().isEmpty()) {
                     ps.setProfessions(storedPs.getProfessions());
