@@ -541,6 +541,38 @@ public class PsOperationTest extends BaseOperationTest {
     }
 
     @Test
+    @DisplayName(value = "should keep stored professions of a PSI Ps, unless the update comes from the portal")
+    @MongoDataSet(cleanBefore = true, cleanAfter = true)
+    public void updatePsiProfessionsOnlyFromPortal() throws Exception {
+        String psiId = "019fffff-0000-7000-8000-c1a0de000010";
+        String psiBody = "{\"nationalId\": \"" + psiId + "\", \"lastName\": \"DUPONT\", \"ids\": [\"" + psiId + "\"],"
+                + " \"professions\": [{\"code\": \"%s\", \"workSituations\": [{\"structure\": {\"email\": \"%s\"}}]}]}";
+
+        mockMvc.perform(post("/api/v2/ps").contentType("application/json")
+                .content(String.format(psiBody, "10", "pro.avant@test.fr")))
+                .andExpect(status().is(201));
+
+        // Sans source : les professions en base du compte PSI sont conservées (protection pscload/fusions)
+        mockMvc.perform(put("/api/v2/ps").contentType("application/json")
+                .content(String.format(psiBody, "60", "pro.apres@test.fr")))
+                .andExpect(status().is(200));
+        Ps afterDefaultUpdate = psRepository.findByNationalId(psiId);
+        assertEquals("10", afterDefaultUpdate.getProfessions().get(0).getCode());
+        assertEquals("pro.avant@test.fr",
+                afterDefaultUpdate.getProfessions().get(0).getWorkSituations().get(0).getStructure().getEmail());
+
+        // source=portal : les professions envoyées sont enregistrées telles quelles
+        mockMvc.perform(put("/api/v2/ps").queryParam("source", "portal").contentType("application/json")
+                .content(String.format(psiBody, "60", "pro.apres@test.fr")))
+                .andExpect(status().is(200));
+        Ps afterPortalUpdate = psRepository.findByNationalId(psiId);
+        assertEquals("60", afterPortalUpdate.getProfessions().get(0).getCode());
+        assertEquals("pro.apres@test.fr",
+                afterPortalUpdate.getProfessions().get(0).getWorkSituations().get(0).getStructure().getEmail());
+        assertThat(memoryAppender.contains("Update of Ps " + psiId + " from portal: professions saved as sent", Level.INFO)).isTrue();
+    }
+
+    @Test
     @DisplayName(value = "should retrieve all Ps")
     @MongoDataSet(value = "/dataset/ps_2_psref_entries.json", cleanBefore = true, cleanAfter = true)
     public void getPsByIdsContaining() {
